@@ -1,0 +1,404 @@
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { DatePipe } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DocumentoService } from '../../core/services/documento.service';
+import { PrivilegiosService } from '../../core/services/privilegios.service';
+import { Documento } from '../../shared/models';
+import { FormularioDinamicoComponent } from '../../shared/components/formulario-dinamico/formulario-dinamico.component';
+import { environment } from '../../../environments/environment';
+
+@Component({
+  selector: 'app-monitor',
+  imports: [FormsModule, DatePipe, FormularioDinamicoComponent],
+  templateUrl: './monitor.component.html',
+  styleUrl: './monitor.component.css'
+})
+export class MonitorComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  protected auth = inject(AuthService);
+  private docService = inject(DocumentoService);
+  private sanitizer = inject(DomSanitizer);
+  protected privSvc = inject(PrivilegiosService);
+
+  actividades = signal<any[]>([]);
+  docsModal = signal<Documento[]>([]);
+  subiendoDoc = signal(false);
+  docVisorModal = signal<any | null>(null);
+  privilegiosActivos = signal<any>(null);
+  tramitesAgrupados = signal<Map<string, any[]>>(new Map());
+  tramitesExpandidos = new Set<string>();
+  actividadSeleccionada = signal<any | null>(null);
+  tramiteSeleccionado = signal<any | null>(null);
+  politicaPasos = signal<any[]>([]);
+  loading = signal(true);
+  loadingDetalle = signal(false);
+  error = signal('');
+  errorModal = signal('');
+  connected = signal(false);
+  mostrarModal = signal(false);
+  etiquetasCliente = signal<Record<string, string>>({});
+  datosFormulario: Record<string, any> = {};
+  guardandoBorrador = signal(false);
+  borradorGuardado = signal(false);
+  historialActividad = signal<any[]>([]);
+
+  private ws: WebSocket | null = null;
+  private _refreshInterval: any;
+
+  ngOnInit() {
+    this.load();
+    this.conectarWS();
+    this._refreshInterval = setInterval(() => this.load(true), 10000);
+  }
+
+  ngOnDestroy() {
+    if (this._refreshInterval) clearInterval(this._refreshInterval);
+    if (this.ws) this.ws.close();
+  }
+
+  load(silencioso = false) {
+    if (silencioso && this.mostrarModal()) return;
+    if (!silencioso) { this.loading.set(true); this.error.set(''); }
+    const esAdmin = this.auth.currentUser()?.roles?.includes('ADMIN') ?? false;
+    const endpoint = esAdmin ? '/monitor/actividades' : '/monitor/mis-actividades';
+    this.api.get<any>(endpoint).subscribe({
+      next: res => {
+        const content = Array.isArray(res) ? res : (res.content || []);
+        this.actividades.set(content);
+        this.agruparPorTramite(content);
+        if (!silencioso) this.loading.set(false);
+      },
+      error: () => {
+        if (!silencioso) { this.error.set('Error al cargar actividades'); this.loading.set(false); }
+      }
+    });
+  }
+
+  abrirActividad(actividad: any) {
+    this.loadingDetalle.set(true);
+    this.errorModal.set('');
+    this.datosFormulario = {};
+    this.tramiteSeleccionado.set(null);
+    this.politicaPasos.set([]);
+    this.etiquetasCliente.set({});
+    this.docsModal.set([]);
+
+    this.api.get<any>(`/actividades/${actividad.id}`).subscribe({
+      next: detalle => {
+        const yaCompletada = detalle.estado === 'COMPLETADO' ||
+                             (detalle.datosFormulario &&
+                              Object.keys(detalle.datosFormulario).length > 0);
+
+        detalle.formularioDefinicion?.forEach((c: any) => {
+          if (c.tipo === 'LABEL') return;
+          if (c.tipo === 'GRID') {
+            this.datosFormulario[c.id] = detalle.datosFormulario?.[c.id] ?? [];
+            return;
+          }
+          this.datosFormulario[c.id] = detalle.datosFormulario?.[c.id]
+            ?? ((c.tipo === 'CHECKBOX' || c.tipo === 'BUTTON') ? false : '');
+        });
+
+        if (!yaCompletada) {
+          const borradorRaw = localStorage.getItem(`borrador_actividad_${detalle.id}`);
+          if (borradorRaw) {
+            try {
+              const borrador = JSON.parse(borradorRaw);
+              Object.keys(borrador.datos ?? {}).forEach(k => {
+                if (borrador.datos[k] !== '' && borrador.datos[k] !== null) {
+                  this.datosFormulario[k] = borrador.datos[k];
+                }
+              });
+              this.borradorGuardado.set(true);
+              setTimeout(() => this.borradorGuardado.set(false), 2500);
+            } catch {}
+          }
+        }
+
+        detalle._soloLectura = yaCompletada;
+        this.actividadSeleccionada.set(detalle);
+
+        // Cargar historial
+        this.api.get<any[]>(`/actividades/${detalle.id}/historial`).subscribe({
+          next: h => this.historialActividad.set(h ?? []),
+          error: () => this.historialActividad.set([])
+        });
+
+        this.api.get<any>(`/tramites/${detalle.tramiteId}`).subscribe({
+          next: tramite => {
+            this.tramiteSeleccionado.set(tramite);
+
+            // Cargar docs propios + docs del diagramador (actividadId corto tipo "n1")
+            this.docService.getByActividad(actividad.id).subscribe({
+              next: docsPropios => {
+                const politicaId = tramite.politicaId ?? null;
+                if (politicaId) {
+                  this.docService.getByPolitica(politicaId).subscribe({
+                    next: docsPolitica => {
+                      const docsNodo = docsPolitica.filter((d: any) =>
+                        d.actividadId && d.actividadId.length < 10
+                      );
+                      this.docsModal.set([...docsPropios, ...docsNodo]);
+                    },
+                    error: () => { this.docsModal.set(docsPropios); }
+                  });
+                } else {
+                  this.docsModal.set(docsPropios);
+                }
+              },
+              error: () => {}
+            });
+
+            if (tramite.politicaId) {
+              this.api.get<any>(`/politicas/${tramite.politicaId}`).subscribe({
+                next: politica => {
+                  const diagramData = politica.diagramJson ? JSON.parse(politica.diagramJson) : {};
+                  this.privilegiosActivos.set(diagramData.privilegios ?? null);
+                  this.politicaPasos.set(politica.pasos ?? []);
+                  const mapa: Record<string, string> = {};
+                  (politica.pasos ?? []).forEach((paso: any) => {
+                    (paso.formulario ?? []).forEach((c: any) => {
+                      mapa[c.id] = c.etiqueta ?? c.id;
+                    });
+                  });
+                  this.etiquetasCliente.set(mapa);
+                  this.loadingDetalle.set(false);
+                  this.mostrarModal.set(true);
+                },
+                error: () => { this.loadingDetalle.set(false); this.mostrarModal.set(true); }
+              });
+            } else {
+              this.loadingDetalle.set(false);
+              this.mostrarModal.set(true);
+            }
+          },
+          error: () => { this.loadingDetalle.set(false); this.mostrarModal.set(true); }
+        });
+      },
+      error: () => { this.loadingDetalle.set(false); }
+    });
+  }
+
+  cerrarModal() {
+    this.mostrarModal.set(false);
+    this.actividadSeleccionada.set(null);
+    this.tramiteSeleccionado.set(null);
+    this.politicaPasos.set([]);
+    this.etiquetasCliente.set({});
+    this.errorModal.set('');
+    this.docsModal.set([]);
+    this.subiendoDoc.set(false);
+    this.privilegiosActivos.set(null);
+    this.borradorGuardado.set(false);
+    this.historialActividad.set([]);
+  }
+
+  subirDocModal(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    const a = this.actividadSeleccionada();
+    if (!file || !a) return;
+    this.subiendoDoc.set(true);
+    this.docService.upload(file, undefined, a.tramiteId ?? undefined, a.id).subscribe({
+      next: doc => { this.docsModal.update(docs => [...docs, doc]); this.subiendoDoc.set(false); },
+      error: () => this.subiendoDoc.set(false),
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  getSafeUrl(url: string): SafeResourceUrl { return this.sanitizer.bypassSecurityTrustResourceUrl(url); }
+
+  verDocModal(doc: any) { this.docVisorModal.set(doc); }
+  cerrarVisorModal() { this.docVisorModal.set(null); }
+  esPDF(doc: any) { return doc.tipo?.includes('pdf') || doc.nombre?.endsWith('.pdf'); }
+  esImagen(doc: any) { return doc.tipo?.startsWith('image/') || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(doc.nombre); }
+
+  eliminarDocModal(docId: string): void {
+    this.docService.eliminar(docId).subscribe({
+      next: () => this.docsModal.update(docs => docs.filter(d => d.id !== docId)),
+      error: () => {},
+    });
+  }
+
+  getDatosCliente(): { etiqueta: string; valor: any }[] {
+    const tramite = this.tramiteSeleccionado();
+    const actividad = this.actividadSeleccionada();
+    const fuente = tramite?.datos ?? tramite?.datosCliente ?? actividad?.datos;
+    if (!fuente) return [];
+    const mapa = this.etiquetasCliente();
+    return Object.entries(fuente)
+      .filter(([, valor]) => valor !== null && valor !== undefined && valor !== '')
+      .map(([key, valor]) => ({ etiqueta: mapa[key] ?? key, valor }));
+  }
+
+  iniciarActividad() {
+    const a = this.actividadSeleccionada();
+    if (!a) return;
+    const userId = this.auth.currentUser()?.id;
+    this.api.patch<any>(`/actividades/${a.id}/iniciar`, { responsableId: userId }).subscribe({
+      next: updated => {
+        this.actividadSeleccionada.set(updated);
+        this.load();
+      },
+      error: () => this.errorModal.set('Error al iniciar actividad')
+    });
+  }
+
+  completarActividad() {
+    const a = this.actividadSeleccionada();
+    if (!a) return;
+    if (a._soloLectura) {
+      this.errorModal.set('Esta actividad ya fue completada y no puede modificarse.');
+      return;
+    }
+    const camposRequeridos = a.formularioDefinicion?.filter((c: any) => c.requerido && c.tipo !== 'LABEL') ?? [];
+    for (const campo of camposRequeridos) {
+      const val = this.datosFormulario[campo.id];
+      const faltante = campo.tipo === 'GRID'
+        ? !Array.isArray(val) || val.length === 0
+        : campo.tipo === 'BUTTON'
+          ? val !== true
+          : (val === '' || val === null || val === undefined);
+      if (faltante) {
+        this.errorModal.set(`El campo "${campo.etiqueta}" es requerido`);
+        return;
+      }
+    }
+    this.errorModal.set('');
+    this.api.patch<any>(`/actividades/${a.id}/formulario`, this.datosFormulario).subscribe({
+      next: () => {
+        this.eliminarBorrador(a.id);
+        this.cerrarModal();
+        this.load();
+      },
+      error: () => this.errorModal.set('Error al completar actividad')
+    });
+  }
+
+  agruparPorTramite(actividades: any[]) {
+    const mapa = new Map<string, any[]>();
+    for (const a of actividades) {
+      const key = a.tramiteId ?? 'sin-tramite';
+      if (!mapa.has(key)) mapa.set(key, []);
+      mapa.get(key)!.push(a);
+    }
+    mapa.forEach((acts, key) => {
+      mapa.set(key, acts.sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)));
+    });
+    this.tramitesAgrupados.set(mapa);
+  }
+
+  getTramiteKeys(): string[] {
+    return Array.from(this.tramitesAgrupados().keys());
+  }
+
+  toggleTramite(tramiteId: string) {
+    if (this.tramitesExpandidos.has(tramiteId)) {
+      this.tramitesExpandidos.delete(tramiteId);
+    } else {
+      this.tramitesExpandidos.add(tramiteId);
+    }
+  }
+
+  isTramiteExpandido(tramiteId: string): boolean {
+    return this.tramitesExpandidos.has(tramiteId);
+  }
+
+  getTramiteEstadoResumen(acts: any[]): string {
+    const completadas = acts.filter(a => a.estado === 'COMPLETADO').length;
+    const total = acts.length;
+    return `${completadas}/${total} completadas`;
+  }
+
+  getTramiteColorClass(acts: any[]): string {
+    const todasCompletadas = acts.every(a => a.estado === 'COMPLETADO');
+    const hayEnProceso = acts.some(a => a.estado === 'EN_PROCESO');
+    const hayPendiente = acts.some(a => a.estado === 'PENDIENTE');
+    if (todasCompletadas) return 'folder-completado';
+    if (hayEnProceso) return 'folder-proceso';
+    if (hayPendiente) return 'folder-pendiente';
+    return 'folder-default';
+  }
+
+  getEstadoClass(estado: string): string {
+    switch (estado) {
+      case 'PENDIENTE':  return 'badge-pendiente';
+      case 'EN_PROCESO': return 'badge-proceso';
+      case 'COMPLETADO': return 'badge-completado';
+      case 'OMITIDO':    return 'badge-omitido';
+      default:           return 'badge-default';
+    }
+  }
+
+  /** Una actividad activa (pendiente/en proceso) es urgente si su prioridad
+   *  es URGENTE o si su plazo (fechaLimite) ya venció o vence en <2h.
+   *  Mismo criterio que MonitorController.esUrgente en el backend. */
+  esUrgente(a: any): boolean {
+    const activa = a.estado === 'PENDIENTE' || a.estado === 'EN_PROCESO';
+    if (!activa) return false;
+    if (a.prioridad === 'URGENTE') return true;
+    if (!a.fechaLimite) return false;
+    const limite = new Date(a.fechaLimite).getTime();
+    return limite - Date.now() < 2 * 60 * 60 * 1000;
+  }
+
+  resumenMonitor(): { pendientes: number; enProceso: number; urgentes: number; finalizadas: number } {
+    const acts = this.actividades();
+    let urgentes = 0, pendientes = 0, enProceso = 0, finalizadas = 0;
+    for (const a of acts) {
+      if (this.esUrgente(a)) { urgentes++; continue; }
+      if (a.estado === 'PENDIENTE') pendientes++;
+      else if (a.estado === 'EN_PROCESO') enProceso++;
+      else if (a.estado === 'COMPLETADO' || a.estado === 'OMITIDO') finalizadas++;
+    }
+    return { pendientes, enProceso, urgentes, finalizadas };
+  }
+
+  guardarBorrador(): void {
+    const a = this.actividadSeleccionada();
+    if (!a || a._soloLectura) return;
+    this.guardandoBorrador.set(true);
+    const key = `borrador_actividad_${a.id}`;
+    localStorage.setItem(key, JSON.stringify({
+      datos: this.datosFormulario,
+      fecha: new Date().toISOString()
+    }));
+    setTimeout(() => {
+      this.guardandoBorrador.set(false);
+      this.borradorGuardado.set(true);
+      setTimeout(() => this.borradorGuardado.set(false), 2500);
+    }, 400);
+  }
+
+  eliminarBorrador(id: string): void {
+    localStorage.removeItem(`borrador_actividad_${id}`);
+  }
+
+  tieneBorrador(id: string): boolean {
+    return !!localStorage.getItem(`borrador_actividad_${id}`);
+  }
+
+  iconoHistorial(tipo: string): string {
+    const iconos: Record<string, string> = {
+      'INICIADA': '▶️',
+      'COMPLETADA': '✅',
+      'FORMULARIO_GUARDADO': '💾',
+      'DOCUMENTO_SUBIDO': '📎',
+      'BORRADOR': '✏️',
+    };
+    return iconos[tipo] ?? '📋';
+  }
+
+  private conectarWS() {
+    const token = this.auth.getToken();
+    if (!token) return;
+    try {
+      this.ws = new WebSocket(`${environment.wsUrl}/monitor?token=${token}`);
+      this.ws.onopen = () => this.connected.set(true);
+      this.ws.onclose = () => this.connected.set(false);
+      this.ws.onmessage = () => this.load();
+    } catch { this.connected.set(false); }
+  }
+}

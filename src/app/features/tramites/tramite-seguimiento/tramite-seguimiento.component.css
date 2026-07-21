@@ -1,0 +1,68 @@
+.page { padding: 2rem; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.page-header h1 { margin: 0; color: #1a237e; }
+.btn-primary { background: #1a237e; color: #fff; padding: 0.5rem 1.25rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; }
+.filters { margin-bottom: 1rem; }
+.filters select { padding: 0.4rem 0.75rem; border: 1px solid #bdbdbd; border-radius: 4px; font-size: 0.875rem; }
+.table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.1); font-size: 0.9rem; }
+.table th { background: #f5f5f5; padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #616161; }
+.table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f0f0f0; }
+.badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+.badge-pendiente { background: #fff3e0; color: #e65100; }
+.badge-en_proceso { background: #e3f2fd; color: #1565c0; }
+.badge-completado { background: #e8f5e9; color: #2e7d32; }
+.badge-rechazado { background: #fce4ec; color: #b71c1c; }
+.badge-cancelado { background: #f5f5f5; color: #757575; }
+.badge-en_proceso { background: #e3f2fd; color: #1565c0; }
+.select-estado { padding: 3px 6px; border: 1px solid #bdbdbd; border-radius: 4px; font-size: 0.8rem; }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+.pagination button { padding: 0.4rem 1rem; border: 1px solid #bdbdbd; border-radius: 4px; background: #fff; cursor: pointer; }
+.pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.error-msg { color: #c62828; }
+.empty { color: #9e9e9e; }
+.btn-eliminar-tramite {
+  background:#ffebee; color:#c62828; border:1px solid #ef9a9a;
+  padding:4px 10px; border-radius:5px; cursor:pointer; font-size:0.8rem;
+  margin-left:6px;
+}
+
+.btn-ver-docs {
+  padding:3px 10px; background:#fff8e1; color:#795548;
+  border:1px solid #ffe082; border-radius:5px; cursor:pointer;
+  font-size:0.8rem; white-space:nowrap;
+}
+.btn-ver-docs:hover { background:#ffe082; }
+.btn-ver-docs.active { background:#ffe082; }
+
+.docs-expansion-row td { padding:0; }
+.docs-expansion-panel {
+  padding:12px 20px; background:#fffde7;
+  border-top:1px solid #ffe082;
+}
+.docs-cargando, .docs-sin { font-size:0.85rem; color:#999; font-style:italic; }
+.docs-count { font-size:0.82rem; color:#795548; font-weight:600; display:block; margin-bottom:8px; }
+.docs-lista { display:flex; flex-direction:column; gap:6px; }
+.doc-fila { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #ffe082; border-radius:6px; padding:6px 12px; }
+.doc-nombre { flex:1; font-size:0.85rem; color:#333; }
+.btn-doc-dl-seg { color:#1565c0; text-decoration:none; font-size:0.82rem; white-space:nowrap; }
+
+.cliente-upload-section { margin-top:12px; padding-top:12px; border-top:1px dashed #c5cae9; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.cliente-upload-header { font-size:12px; color:#555; }
+.btn-subir-cliente { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#1a237e; color:#fff; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; transition:background 0.15s; }
+.btn-subir-cliente:hover { background:#283593; }
+.upload-error { font-size:11px; color:#c62828; }
+.cliente-formulario-section { margin-top:12px; padding-top:12px; border-top:1px dashed #c5cae9; }
+.cliente-form-exito { font-size:11px; color:#2e7d32; display:block; margin-top:4px; }
+.btn-completar-cliente { margin-top:8px; padding:7px 18px; background:#1a237e; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; }
+.btn-completar-cliente:disabled { opacity:0.6; cursor:default; }
+
+.btn-reporte { padding:4px 10px; font-size:11px; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; border-radius:4px; cursor:pointer; white-space:nowrap; }
+.btn-reporte:hover:not(:disabled) { background:#c8e6c9; }
+.btn-reporte:disabled { opacity:0.6; cursor:default; }
+
+.timeline-tramite { display:flex; flex-direction:column; gap:6px; }
+.timeline-evento { display:flex; align-items:center; gap:10px; padding:6px 10px; background:#fff; border:1px solid #eee; border-radius:6px; font-size:12.5px; flex-wrap:wrap; }
+.timeline-icono { font-size:14px; }
+.timeline-tipo { font-weight:700; color:#1a237e; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; }
+.timeline-desc { flex:1; color:#444; }
+.timeline-fecha { color:#999; font-size:11px; white-space:nowrap; }

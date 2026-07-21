@@ -1,0 +1,184 @@
+<div class="page">
+  <div class="page-header">
+    <h1>{{ auth.getUserRole() === 'CLIENTE' ? 'Mis Trámites' : 'Gestión de Trámites' }}</h1>
+    @if (auth.getUserRole() === 'CLIENTE') {
+      <a routerLink="/tramites/iniciar" class="btn-primary">+ Nuevo Trámite</a>
+    }
+  </div>
+
+  <div class="filters">
+    <select [(ngModel)]="filtroEstado" (change)="load()" name="estado">
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e) {
+        <option [value]="e">{{ e }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) { <p class="error-msg">{{ error() }}</p> }
+
+  @if (loading()) {
+    <p>Cargando...</p>
+  } @else if (tramites().length === 0) {
+    <p class="empty">No hay trámites.</p>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Título</th><th>Solicitante</th><th>Estado</th><th>Fecha</th><th>Docs</th>
+          @if (auth.getUserRole() !== 'CLIENTE') { <th>Reporte</th> }
+          @if (auth.getUserRole() !== 'CLIENTE') { <th>Acción</th> }
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of tramites(); track t.id) {
+          <tr>
+            <td>#{{ t.id }}</td>
+            <td>{{ t.titulo }}</td>
+            <td>{{ t.usuarioSolicitanteId }}</td>
+            <td><span class="badge badge-{{ t.estado.toLowerCase() }}">{{ t.estado }}</span></td>
+            <td>{{ t.fechaInicio | slice:0:10 }}</td>
+            <td>
+              <button class="btn-ver-docs"
+                      [class.active]="tramiteDocsAbierto() === t.id"
+                      (click)="toggleDocsTramite(t.id, $event)">
+                📎 {{ tramiteDocsAbierto() === t.id ? '▲ Cerrar' : 'Ver documentos' }}
+              </button>
+              <button class="btn-ver-docs"
+                      [class.active]="tramiteHistorialAbierto() === t.id"
+                      (click)="toggleHistorial(t.id, $event)">
+                🕓 {{ tramiteHistorialAbierto() === t.id ? '▲ Cerrar' : 'Trazabilidad' }}
+              </button>
+            </td>
+            @if (auth.getUserRole() !== 'CLIENTE') {
+              <td>
+                <button class="btn-reporte"
+                        [disabled]="generandoReporte() === t.id"
+                        (click)="generarReporte(t, $event)">
+                  @if (generandoReporte() === t.id) {
+                    ⏳
+                  } @else {
+                    📊 Reporte
+                  }
+                </button>
+              </td>
+            }
+            @if (auth.getUserRole() !== 'CLIENTE') {
+              <td>
+                <select class="select-estado" [value]="t.estado" (change)="cambiarEstado(t.id, $any($event.target).value)">
+                  @for (e of estados; track e) {
+                    <option [value]="e">{{ e }}</option>
+                  }
+                </select>
+                @if (auth.getUserRole() === 'ADMIN' &&
+                     (t.estado === 'CANCELADO' || t.estado === 'COMPLETADO')) {
+                  <button class="btn-eliminar-tramite" (click)="eliminarTramite(t.id)">
+                    🗑 Eliminar
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+          @if (tramiteHistorialAbierto() === t.id) {
+            <tr class="docs-expansion-row">
+              <td [attr.colspan]="auth.getUserRole() !== 'CLIENTE' ? 7 : 6">
+                <div class="docs-expansion-panel">
+                  @if (!t.historial || t.historial.length === 0) {
+                    <span class="docs-sin">Sin eventos de trazabilidad registrados.</span>
+                  } @else {
+                    <div class="timeline-tramite">
+                      @for (h of t.historial; track $index) {
+                        <div class="timeline-evento">
+                          <span class="timeline-icono">{{ iconoHistorialTramite(h.tipo) }}</span>
+                          <span class="timeline-tipo">{{ h.tipo }}</span>
+                          <span class="timeline-desc">{{ h.descripcion }}</span>
+                          <span class="timeline-fecha">{{ h.fecha | slice:0:16 }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+          @if (tramiteDocsAbierto() === t.id) {
+            <tr class="docs-expansion-row">
+              <td [attr.colspan]="auth.getUserRole() !== 'CLIENTE' ? 7 : 6">
+                <div class="docs-expansion-panel">
+                  @if (cargandoDocsTramite()) {
+                    <span class="docs-cargando">Cargando documentos...</span>
+                  } @else if (docsDelTramite().length === 0) {
+                    <span class="docs-sin">Sin documentos adjuntos en este trámite.</span>
+                  } @else {
+                    <span class="docs-count">{{ docsDelTramite().length }} documento(s) adjunto(s)</span>
+                    <div class="docs-lista">
+                      @for (doc of docsDelTramite(); track doc.id) {
+                        <div class="doc-fila">
+                          <span class="doc-nombre">📄 {{ doc.nombre }}</span>
+                          <a [href]="doc.url" target="_blank" class="btn-doc-dl-seg">⬇ Descargar</a>
+                        </div>
+                      }
+                    </div>
+                  }
+                  @if (auth.getUserRole() === 'CLIENTE' && actividadActiva()) {
+                    <div class="cliente-formulario-section">
+                      <div class="cliente-upload-header">
+                        <span class="upload-hint">
+                          📋 Paso actual: <strong>{{ actividadActiva()!.nombre }}</strong>
+                        </span>
+                      </div>
+
+                      @if (actividadActiva()!.formularioDefinicion?.length > 0) {
+                        <app-formulario-dinamico
+                          [campos]="actividadActiva()!.formularioDefinicion"
+                          [datos]="datosFormularioActiva">
+                        </app-formulario-dinamico>
+                        @if (errorFormularioActiva()) {
+                          <span class="upload-error">{{ errorFormularioActiva() }}</span>
+                        }
+                        @if (exitoFormularioActiva()) {
+                          <span class="cliente-form-exito">✅ Formulario guardado</span>
+                        }
+                        <button class="btn-completar-cliente"
+                                [disabled]="guardandoFormularioActiva()"
+                                (click)="completarFormularioActiva()">
+                          {{ guardandoFormularioActiva() ? 'Guardando...' : '✓ Completar paso' }}
+                        </button>
+                      }
+                    </div>
+
+                    @if (tieneCampoFile(actividadActiva())) {
+                      <div class="cliente-upload-section">
+                        <label class="btn-subir-cliente">
+                          @if (subiendoDocCliente()) {
+                            ⏳ Subiendo...
+                          } @else {
+                            📎 Adjuntar documento
+                          }
+                          <input type="file" style="display:none"
+                                 [disabled]="subiendoDocCliente()"
+                                 (change)="subirDocCliente($event, t.id)"/>
+                        </label>
+                        @if (errorSubidaCliente()) {
+                          <span class="upload-error">{{ errorSubidaCliente() }}</span>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+    @if (errorReporte()) {
+      <p class="error-msg">{{ errorReporte() }}</p>
+    }
+    <div class="pagination">
+      <button (click)="prevPage()" [disabled]="currentPage() === 0">‹ Anterior</button>
+      <span>Página {{ currentPage() + 1 }} / {{ totalPages() }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">Siguiente ›</button>
+    </div>
+  }
+</div>

@@ -1,0 +1,220 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Gestión Documental</h1>
+    <a routerLink="upload" class="btn-primary">+ Subir Documento</a>
+  </div>
+
+  <div class="vista-tabs">
+    <button class="vista-tab" [class.active]="vistaActiva === 'lista'"
+            (click)="cambiarVista('lista')">
+      📄 Lista general
+    </button>
+    <button class="vista-tab" [class.active]="vistaActiva === 'jerarquica'"
+            (click)="cambiarVista('jerarquica')">
+      🗂 Por Política y Nodo
+    </button>
+  </div>
+
+  @if (vistaActiva === 'lista') {
+    <div class="search-panel">
+      <select [(ngModel)]="tipoContexto">
+        <option value="politica">Política</option>
+        <option value="tramite">Trámite</option>
+        <option value="actividad">Actividad</option>
+      </select>
+      <input
+        type="text"
+        [(ngModel)]="contextoId"
+        placeholder="ID del contexto"
+        (keyup.enter)="buscar()"
+      />
+      <button class="btn-primary" (click)="buscar()">Buscar</button>
+    </div>
+
+    @if (error()) {
+      <p class="error-msg">{{ error() }}</p>
+    }
+
+    @if (loading()) {
+      <p>Cargando...</p>
+    } @else {
+      @if (documentos().length === 0) {
+        <p class="empty">No hay documentos.</p>
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Versión</th>
+              <th>Tipo</th>
+              <th>Tamaño</th>
+              <th>Fecha</th>
+              <th>Subido por</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (doc of documentos(); track doc.id) {
+              <tr>
+                <td>{{ doc.nombre }}</td>
+                <td>
+                  <span class="version-badge" (click)="verHistorial(doc)" title="Ver historial de versiones">
+                    v{{ doc.version ?? 1 }}
+                  </span>
+                </td>
+                <td>{{ doc.tipo }}</td>
+                <td>{{ formatSize(doc.size) }}</td>
+                <td>{{ doc.fechaSubida | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ doc.subidoPor }}</td>
+                <td class="actions">
+                  <button class="btn-sm btn-ver" (click)="verDoc(doc)">👁 Ver</button>
+                  <a [href]="doc.url" target="_blank" rel="noopener" class="btn-sm">⬇ Descargar</a>
+                  <label class="btn-sm btn-version">
+                    {{ subiendoVersion() === doc.id ? '⏳...' : '🔄 Nueva versión' }}
+                    <input type="file" hidden [disabled]="subiendoVersion() === doc.id" (change)="subirNuevaVersion(doc, $event)"/>
+                  </label>
+                  <button class="btn-sm btn-danger" (click)="eliminar(doc)">Eliminar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  }
+
+  @if (vistaActiva === 'jerarquica') {
+    @if (cargandoJerarquia()) {
+      <p>Cargando políticas...</p>
+    } @else if (politicas().length === 0) {
+      <p class="empty">No hay políticas disponibles.</p>
+    } @else {
+      <div class="jerarquia">
+        @for (pol of politicas(); track pol.id) {
+          <div class="pol-item">
+            <div class="pol-header" (click)="togglePolitica(pol.id, pol.diagramJson)">
+              <span class="pol-toggle">{{ politicaAbierta() === pol.id ? '▼' : '▶' }}</span>
+              <span class="pol-icon">📋</span>
+              <span class="pol-nombre">{{ pol.nombre }}</span>
+              <span class="pol-badge" [class.activa]="pol.activa">
+                {{ pol.activa ? 'Activa' : 'Inactiva' }}
+              </span>
+            </div>
+
+            @if (politicaAbierta() === pol.id) {
+              <div class="pol-body">
+                @if (getNodosDePolitica(pol.id).length === 0) {
+                  <p class="empty-nodos">Sin actividades con documentos</p>
+                } @else {
+                  @for (nodo of getNodosDePolitica(pol.id); track nodo.id) {
+                    <div class="nodo-item">
+                      <div class="nodo-header" (click)="toggleActividad(nodo.id)">
+                        <span class="nodo-toggle">{{ actividadAbierta() === nodo.id ? '▼' : '▶' }}</span>
+                        <span class="nodo-icon">🔵</span>
+                        <span class="nodo-nombre">{{ nodo.label }}</span>
+                        @if (docsNodo()[nodo.id]?.length) {
+                          <span class="docs-count">{{ docsNodo()[nodo.id].length }} doc(s)</span>
+                        }
+                      </div>
+
+                      @if (actividadAbierta() === nodo.id) {
+                        <div class="nodo-docs">
+                          @if (!docsNodo()[nodo.id]) {
+                            <p class="loading-docs">Cargando...</p>
+                          } @else if (docsNodo()[nodo.id].length === 0) {
+                            <p class="empty-docs">Sin documentos adjuntos</p>
+                          } @else {
+                            @for (doc of docsNodo()[nodo.id]; track doc.id) {
+                              <div class="doc-row">
+                                <span class="doc-icon">
+                                  @if (esPDF(doc)) { 📕 }
+                                  @else if (esImagen(doc)) { 🖼 }
+                                  @else { 📄 }
+                                </span>
+                                <span class="doc-nombre">{{ doc.nombre }}</span>
+                                <span class="doc-meta">{{ doc.subidoPor }} · {{ doc.fechaSubida | date:'dd/MM/yy' }}</span>
+                                <div class="doc-actions">
+                                  <button class="btn-sm btn-ver" (click)="verDoc(doc)">👁 Ver</button>
+                                  <a [href]="doc.url" target="_blank" class="btn-sm">⬇</a>
+                                  <button class="btn-sm btn-danger" (click)="eliminar(doc)">✕</button>
+                                </div>
+                              </div>
+                            }
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+
+  @if (historialVersiones()) {
+    <div class="visor-overlay" (click)="cerrarHistorial()">
+      <div class="visor-modal" (click)="$event.stopPropagation()" style="max-width:560px">
+        <div class="visor-header">
+          <span class="visor-nombre">🕓 Historial — {{ docHistorialNombre }}</span>
+          <button class="visor-close" (click)="cerrarHistorial()">✕</button>
+        </div>
+        <div class="visor-body" style="padding:16px;overflow:auto">
+          <h4 style="margin:0 0 8px;color:#1a237e">Versiones</h4>
+          @for (v of historialVersiones(); track v.id) {
+            <div class="historial-row">
+              <span class="version-badge">v{{ v.version ?? 1 }}</span>
+              <span>{{ v.nombre }}</span>
+              <span class="hist-meta">{{ v.subidoPor }} · {{ v.fechaSubida | date:'dd/MM/yy HH:mm' }}</span>
+              @if (v.vigente) { <span class="vigente-tag">vigente</span> }
+              <a [href]="v.url" target="_blank" class="btn-sm">⬇</a>
+            </div>
+          }
+          <h4 style="margin:16px 0 8px;color:#1a237e">Auditoría</h4>
+          @if (!historialAuditoria() || historialAuditoria()!.length === 0) {
+            <p class="empty-docs">Sin registros de auditoría</p>
+          } @else {
+            @for (a of historialAuditoria(); track a.id) {
+              <div class="historial-row">
+                <span class="audit-accion">{{ a.accion }}</span>
+                <span>{{ a.usuario }}</span>
+                <span class="hist-meta">{{ a.fecha | date:'dd/MM/yy HH:mm' }}</span>
+                <span class="hist-detalle">{{ a.detalle }}</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (docVisor()) {
+    <div class="visor-overlay" (click)="cerrarVisor()">
+      <div class="visor-modal" (click)="$event.stopPropagation()">
+        <div class="visor-header">
+          <span class="visor-nombre">{{ docVisor()!.nombre }}</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a [href]="docVisor()!.url" target="_blank" class="btn-sm">⬇ Descargar</a>
+            <button class="visor-close" (click)="cerrarVisor()">✕</button>
+          </div>
+        </div>
+        <div class="visor-body">
+          @if (esPDF(docVisor()!)) {
+            <iframe [src]="getSafeUrl(docVisor()!.url)" class="visor-iframe" frameborder="0"></iframe>
+          } @else if (esImagen(docVisor()!)) {
+            <img [src]="docVisor()!.url" class="visor-img" [alt]="docVisor()!.nombre"/>
+          } @else {
+            <div class="visor-no-preview">
+              <span>📄 Vista previa no disponible para este tipo de archivo</span>
+              <a [href]="docVisor()!.url" target="_blank" class="btn-primary" style="margin-top:16px">
+                ⬇ Descargar para ver
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

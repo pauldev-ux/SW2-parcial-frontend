@@ -1,0 +1,131 @@
+<div class="formdyn">
+  @if (mostrarIA && !soloLectura) {
+    <div class="ia-datos-wrap">
+      <div class="ia-datos-header">🤖 Completar con IA</div>
+      <div class="ia-datos-body">
+        <textarea [(ngModel)]="descripcionDatosIA" rows="2"
+                  placeholder="Describe la situación y la IA intentará llenar los campos por ti..."
+                  [disabled]="cargandoDatosIA()"></textarea>
+        <button type="button" class="btn-ia-datos" (click)="completarDatosConIA()"
+                [disabled]="cargandoDatosIA() || !descripcionDatosIA.trim()">
+          {{ cargandoDatosIA() ? 'Completando...' : 'Completar campos' }}
+        </button>
+        @if (exitoDatosIA()) { <p class="ia-datos-exito">✅ Campos completados. Revisa antes de confirmar.</p> }
+        @if (errorDatosIA()) { <p class="ia-datos-error">{{ errorDatosIA() }}</p> }
+      </div>
+    </div>
+  }
+
+  @for (campo of campos; track campo.id) {
+    @if (campo.tipo === 'LABEL') {
+      <p class="campo-label-texto">{{ campo.etiqueta }}</p>
+    } @else if (campo.tipo === 'GRID') {
+      <div class="form-group">
+        <label>
+          {{ campo.etiqueta }}
+          @if (campo.requerido) { <span class="req">*</span> }
+        </label>
+        <table class="grid-campo-tabla">
+          <thead>
+            <tr>
+              @for (col of campo.columnas; track col.id) { <th>{{ col.etiqueta }}</th> }
+              @if (!soloLectura) { <th></th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of datos[campo.id]; track $index; let fi = $index) {
+              <tr>
+                @for (col of campo.columnas; track col.id) {
+                  <td>
+                    @if (soloLectura) {
+                      {{ fila[col.id] ?? '—' }}
+                    } @else if (col.tipo === 'SELECT') {
+                      <select [(ngModel)]="fila[col.id]" (ngModelChange)="onCampoChange()" [name]="campo.id + '_' + fi + '_' + col.id">
+                        <option value="">--</option>
+                        @for (op of col.opciones; track op) { <option [value]="op">{{ op }}</option> }
+                      </select>
+                    } @else {
+                      <input [type]="col.tipo === 'NUMBER' ? 'number' : (col.tipo === 'DATE' ? 'date' : 'text')"
+                             [(ngModel)]="fila[col.id]" (ngModelChange)="onCampoChange()" [name]="campo.id + '_' + fi + '_' + col.id" />
+                    }
+                  </td>
+                }
+                @if (!soloLectura) {
+                  <td><button type="button" class="btn-del-fila" (click)="eliminarFilaGrid(campo, fi)">×</button></td>
+                }
+              </tr>
+            }
+            @if ((datos[campo.id]?.length ?? 0) === 0) {
+              <tr><td [attr.colspan]="(campo.columnas?.length ?? 1) + 1" class="grid-vacio">Sin filas</td></tr>
+            }
+          </tbody>
+        </table>
+        @if (!soloLectura) {
+          <button type="button" class="btn-add-fila" (click)="agregarFilaGrid(campo)">+ Agregar fila</button>
+        }
+      </div>
+    } @else {
+      <div class="form-group">
+        <label>
+          {{ campo.etiqueta }}
+          @if (campo.requerido) { <span class="req">*</span> }
+        </label>
+
+        @if (soloLectura) {
+          @if (campo.tipo === 'BUTTON') {
+            <div class="valor-readonly">{{ datos[campo.id] ? '✓ Confirmado' : 'No confirmado' }}</div>
+          } @else {
+            <div class="valor-readonly">
+              {{ datos[campo.id] !== '' && datos[campo.id] !== false && datos[campo.id] !== null && datos[campo.id] !== undefined ? datos[campo.id] : '—' }}
+            </div>
+          }
+        } @else {
+          @if (campo.tipo === 'TEXT') {
+            <input type="text" [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" [placeholder]="campo.etiqueta" />
+          }
+          @if (campo.tipo === 'TEXTAREA') {
+            <textarea [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" rows="3" [placeholder]="campo.etiqueta"></textarea>
+          }
+          @if (campo.tipo === 'NUMBER') {
+            <input type="number" [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" [placeholder]="campo.etiqueta" />
+          }
+          @if (campo.tipo === 'DATE') {
+            <input type="date" [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" />
+          }
+          @if (campo.tipo === 'SELECT') {
+            <select [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()">
+              <option value="">-- Seleccionar --</option>
+              @for (op of campo.opciones; track op) { <option [value]="op">{{ op }}</option> }
+            </select>
+          }
+          @if (campo.tipo === 'CHECKBOX') {
+            <label class="check-label">
+              <input type="checkbox" [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" />
+              {{ campo.etiqueta }}
+            </label>
+          }
+          @if (campo.tipo === 'DECISION') {
+            <div class="decision-opciones">
+              @for (op of campo.opciones; track op) {
+                <label class="decision-opcion">
+                  <input type="radio" [name]="campo.id" [value]="op" [(ngModel)]="datos[campo.id]" (ngModelChange)="onCampoChange()" />
+                  {{ op }}
+                </label>
+              }
+            </div>
+          }
+          @if (campo.tipo === 'FILE') {
+            <input type="file" (change)="datos[campo.id] = $any($event.target).files[0]?.name; onCampoChange()" />
+          }
+          @if (campo.tipo === 'BUTTON') {
+            <button type="button" class="btn-campo-accion"
+                    [class.confirmado]="datos[campo.id]"
+                    (click)="datos[campo.id] = !datos[campo.id]; onCampoChange()">
+              {{ datos[campo.id] ? '✓ ' : '' }}{{ campo.etiqueta }}
+            </button>
+          }
+        }
+      </div>
+    }
+  }
+</div>

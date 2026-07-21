@@ -1,0 +1,65 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiUrl;
+
+  get<T>(path: string, params?: Record<string, string | number>): Observable<T> {
+    let httpParams = new HttpParams();
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => httpParams = httpParams.set(k, String(v)));
+    }
+    return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams });
+  }
+
+  post<T>(path: string, body: unknown): Observable<T> {
+    return this.http.post<T>(`${this.baseUrl}${path}`, body);
+  }
+
+  put<T>(path: string, body: unknown): Observable<T> {
+    return this.http.put<T>(`${this.baseUrl}${path}`, body);
+  }
+
+  patch<T>(path: string, body: unknown): Observable<T> {
+    return this.http.patch<T>(`${this.baseUrl}${path}`, body);
+  }
+
+  delete<T>(path: string): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}${path}`);
+  }
+
+  getAnalitica(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/analitica`);
+  }
+
+  consultarIA(texto: string, contexto?: string, modo?: 'generar' | 'editar'): Observable<any> {
+    return this.http.post(`${environment.iaUrl}/api/ia/consulta`, { texto, contexto, modo });
+  }
+
+  generarReporte(datos: any): Observable<any> {
+    return this.http.post(`${environment.iaUrl}/api/ia/generar-reporte`, datos);
+  }
+
+  predecirTiempoTF(body: { orden: number; num_campos: number; hora: number; dia: number }) {
+    return this.http.post<any>(`${environment.iaUrl}/api/ia/tensorflow/predecir-tiempo`, body);
+  }
+
+  detectarAnomaliaTF(body: { tiempo_actual: number; tiempo_esperado: number }) {
+    return this.http.post<any>(`${environment.iaUrl}/api/ia/tensorflow/detectar-anomalia`, body);
+  }
+
+  predecirExitoTF(body: { orden_actual: number; total_actividades: number; completadas: number }) {
+    return this.http.post<any>(`${environment.iaUrl}/api/ia/tensorflow/predecir-exito`, body);
+  }
+
+  analizarCuellosBotellaIA(body: {
+    tramites: { nombre: string; duracion_promedio_horas: number; cantidad_instancias: number; tasa_rechazo: number; responsable?: string }[];
+    periodo_dias?: number;
+  }) {
+    return this.http.post<any>(`${environment.iaUrl}/api/ia/analitica`, body);
+  }
+}
