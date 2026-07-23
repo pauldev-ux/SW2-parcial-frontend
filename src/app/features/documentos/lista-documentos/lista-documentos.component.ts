@@ -8,10 +8,20 @@ import { Documento } from '../../../shared/models';
 import { ApiService } from '../../../core/services/api.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import {
+  LucideFileText, LucideFolderTree, LucideEye, LucideRefreshCw, LucideTrash2,
+  LucideDownload, LucideClipboardList, LucideCircle, LucideImage, LucideClock,
+  LucideChevronDown, LucideChevronRight
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-lista-documentos',
-  imports: [RouterLink, FormsModule, DatePipe],
+  imports: [
+    RouterLink, FormsModule, DatePipe,
+    LucideFileText, LucideFolderTree, LucideEye, LucideRefreshCw, LucideTrash2,
+    LucideDownload, LucideClipboardList, LucideCircle, LucideImage, LucideClock,
+    LucideChevronDown, LucideChevronRight
+  ],
   templateUrl: './lista-documentos.component.html',
   styleUrl: './lista-documentos.component.css',
 })

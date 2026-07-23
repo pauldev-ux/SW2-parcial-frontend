@@ -9,10 +9,20 @@ import { PrivilegiosService } from '../../core/services/privilegios.service';
 import { Documento } from '../../shared/models';
 import { FormularioDinamicoComponent } from '../../shared/components/formulario-dinamico/formulario-dinamico.component';
 import { environment } from '../../../environments/environment';
+import {
+  LucideFlame, LucideCircleCheck, LucideFolderOpen, LucideFolder, LucideChevronUp, LucideChevronDown,
+  LucideCheck, LucideClipboardList, LucideSave, LucideUser, LucideEye, LucideDownload, LucideFileText,
+  LucidePlay, LucideLoaderCircle, LucidePaperclip, LucidePencil, LucideX
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-monitor',
-  imports: [FormsModule, DatePipe, FormularioDinamicoComponent],
+  imports: [
+    FormsModule, DatePipe, FormularioDinamicoComponent,
+    LucideFlame, LucideCircleCheck, LucideFolderOpen, LucideFolder, LucideChevronUp, LucideChevronDown,
+    LucideCheck, LucideClipboardList, LucideSave, LucideUser, LucideEye, LucideDownload, LucideFileText,
+    LucidePlay, LucideLoaderCircle, LucidePaperclip, LucidePencil, LucideX
+  ],
   templateUrl: './monitor.component.html',
   styleUrl: './monitor.component.css'
 })
@@ -382,13 +392,13 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
   iconoHistorial(tipo: string): string {
     const iconos: Record<string, string> = {
-      'INICIADA': '▶️',
-      'COMPLETADA': '✅',
-      'FORMULARIO_GUARDADO': '💾',
-      'DOCUMENTO_SUBIDO': '📎',
-      'BORRADOR': '✏️',
+      'INICIADA': 'play',
+      'COMPLETADA': 'check',
+      'FORMULARIO_GUARDADO': 'save',
+      'DOCUMENTO_SUBIDO': 'paperclip',
+      'BORRADOR': 'pencil',
     };
-    return iconos[tipo] ?? '📋';
+    return iconos[tipo] ?? 'clipboard-list';
   }
 
   private conectarWS() {

@@ -6,10 +6,11 @@ import { ApiService } from '../../../core/services/api.service';
 import { NlpService, RecomendacionPolitica } from '../../../core/services/nlp.service';
 import { Politica, Tramite } from '../../../shared/models';
 import { FormularioDinamicoComponent } from '../../../shared/components/formulario-dinamico/formulario-dinamico.component';
+import { LucideBot, LucideMousePointerClick, LucideClipboardList } from '@lucide/angular';
 
 @Component({
   selector: 'app-tramite-iniciar',
-  imports: [CommonModule, FormsModule, FormularioDinamicoComponent],
+  imports: [CommonModule, FormsModule, FormularioDinamicoComponent, LucideBot, LucideMousePointerClick, LucideClipboardList],
   templateUrl: './tramite-iniciar.component.html',
   styleUrl: './tramite-iniciar.component.css',
 })

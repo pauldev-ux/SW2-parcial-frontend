@@ -24,7 +24,7 @@ import { SidebarComponent } from '../shared/components/sidebar/sidebar.component
     .content {
       flex: 1;
       overflow-y: auto;
-      background: #fafafa;
+      background: var(--color-bg-page);
     }
   `]
 })

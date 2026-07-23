@@ -7,11 +7,11 @@
   <div class="vista-tabs">
     <button class="vista-tab" [class.active]="vistaActiva === 'lista'"
             (click)="cambiarVista('lista')">
-      📄 Lista general
+      <svg lucideFileText [size]="14"></svg> Lista general
     </button>
     <button class="vista-tab" [class.active]="vistaActiva === 'jerarquica'"
             (click)="cambiarVista('jerarquica')">
-      🗂 Por Política y Nodo
+      <svg lucideFolderTree [size]="14"></svg> Por Política y Nodo
     </button>
   </div>
 
@@ -67,13 +67,17 @@
                 <td>{{ doc.fechaSubida | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ doc.subidoPor }}</td>
                 <td class="actions">
-                  <button class="btn-sm btn-ver" (click)="verDoc(doc)">👁 Ver</button>
-                  <a [href]="doc.url" target="_blank" rel="noopener" class="btn-sm">⬇ Descargar</a>
+                  <button class="btn-sm btn-ver" (click)="verDoc(doc)"><svg lucideEye [size]="13"></svg> Ver</button>
+                  <a [href]="doc.url" target="_blank" rel="noopener" class="btn-sm"><svg lucideDownload [size]="13"></svg> Descargar</a>
                   <label class="btn-sm btn-version">
-                    {{ subiendoVersion() === doc.id ? '⏳...' : '🔄 Nueva versión' }}
+                    @if (subiendoVersion() === doc.id) {
+                      Subiendo...
+                    } @else {
+                      <svg lucideRefreshCw [size]="13"></svg> Nueva versión
+                    }
                     <input type="file" hidden [disabled]="subiendoVersion() === doc.id" (change)="subirNuevaVersion(doc, $event)"/>
                   </label>
-                  <button class="btn-sm btn-danger" (click)="eliminar(doc)">Eliminar</button>
+                  <button class="btn-sm btn-danger" (click)="eliminar(doc)"><svg lucideTrash2 [size]="13"></svg> Eliminar</button>
                 </td>
               </tr>
             }
@@ -93,8 +97,14 @@
         @for (pol of politicas(); track pol.id) {
           <div class="pol-item">
             <div class="pol-header" (click)="togglePolitica(pol.id, pol.diagramJson)">
-              <span class="pol-toggle">{{ politicaAbierta() === pol.id ? '▼' : '▶' }}</span>
-              <span class="pol-icon">📋</span>
+              <span class="pol-toggle">
+                @if (politicaAbierta() === pol.id) {
+                  <svg lucideChevronDown [size]="12"></svg>
+                } @else {
+                  <svg lucideChevronRight [size]="12"></svg>
+                }
+              </span>
+              <svg lucideClipboardList class="pol-icon" [size]="16"></svg>
               <span class="pol-nombre">{{ pol.nombre }}</span>
               <span class="pol-badge" [class.activa]="pol.activa">
                 {{ pol.activa ? 'Activa' : 'Inactiva' }}
@@ -109,8 +119,14 @@
                   @for (nodo of getNodosDePolitica(pol.id); track nodo.id) {
                     <div class="nodo-item">
                       <div class="nodo-header" (click)="toggleActividad(nodo.id)">
-                        <span class="nodo-toggle">{{ actividadAbierta() === nodo.id ? '▼' : '▶' }}</span>
-                        <span class="nodo-icon">🔵</span>
+                        <span class="nodo-toggle">
+                          @if (actividadAbierta() === nodo.id) {
+                            <svg lucideChevronDown [size]="11"></svg>
+                          } @else {
+                            <svg lucideChevronRight [size]="11"></svg>
+                          }
+                        </span>
+                        <svg lucideCircle class="nodo-icon" [size]="12"></svg>
                         <span class="nodo-nombre">{{ nodo.label }}</span>
                         @if (docsNodo()[nodo.id]?.length) {
                           <span class="docs-count">{{ docsNodo()[nodo.id].length }} doc(s)</span>
@@ -127,16 +143,18 @@
                             @for (doc of docsNodo()[nodo.id]; track doc.id) {
                               <div class="doc-row">
                                 <span class="doc-icon">
-                                  @if (esPDF(doc)) { 📕 }
-                                  @else if (esImagen(doc)) { 🖼 }
-                                  @else { 📄 }
+                                  @if (esImagen(doc)) {
+                                    <svg lucideImage [size]="14"></svg>
+                                  } @else {
+                                    <svg lucideFileText [size]="14"></svg>
+                                  }
                                 </span>
                                 <span class="doc-nombre">{{ doc.nombre }}</span>
                                 <span class="doc-meta">{{ doc.subidoPor }} · {{ doc.fechaSubida | date:'dd/MM/yy' }}</span>
                                 <div class="doc-actions">
-                                  <button class="btn-sm btn-ver" (click)="verDoc(doc)">👁 Ver</button>
-                                  <a [href]="doc.url" target="_blank" class="btn-sm">⬇</a>
-                                  <button class="btn-sm btn-danger" (click)="eliminar(doc)">✕</button>
+                                  <button class="btn-sm btn-ver" (click)="verDoc(doc)"><svg lucideEye [size]="13"></svg> Ver</button>
+                                  <a [href]="doc.url" target="_blank" class="btn-sm"><svg lucideDownload [size]="13"></svg></a>
+                                  <button class="btn-sm btn-danger" (click)="eliminar(doc)"><svg lucideTrash2 [size]="13"></svg></button>
                                 </div>
                               </div>
                             }
@@ -158,21 +176,21 @@
     <div class="visor-overlay" (click)="cerrarHistorial()">
       <div class="visor-modal" (click)="$event.stopPropagation()" style="max-width:560px">
         <div class="visor-header">
-          <span class="visor-nombre">🕓 Historial — {{ docHistorialNombre }}</span>
-          <button class="visor-close" (click)="cerrarHistorial()">✕</button>
+          <span class="visor-nombre"><svg lucideClock [size]="14"></svg> Historial — {{ docHistorialNombre }}</span>
+          <button class="visor-close" (click)="cerrarHistorial()">×</button>
         </div>
         <div class="visor-body" style="padding:16px;overflow:auto">
-          <h4 style="margin:0 0 8px;color:#1a237e">Versiones</h4>
+          <h4 style="margin:0 0 8px;color:var(--color-primary-500)">Versiones</h4>
           @for (v of historialVersiones(); track v.id) {
             <div class="historial-row">
               <span class="version-badge">v{{ v.version ?? 1 }}</span>
               <span>{{ v.nombre }}</span>
               <span class="hist-meta">{{ v.subidoPor }} · {{ v.fechaSubida | date:'dd/MM/yy HH:mm' }}</span>
               @if (v.vigente) { <span class="vigente-tag">vigente</span> }
-              <a [href]="v.url" target="_blank" class="btn-sm">⬇</a>
+              <a [href]="v.url" target="_blank" class="btn-sm"><svg lucideDownload [size]="13"></svg></a>
             </div>
           }
-          <h4 style="margin:16px 0 8px;color:#1a237e">Auditoría</h4>
+          <h4 style="margin:16px 0 8px;color:var(--color-primary-500)">Auditoría</h4>
           @if (!historialAuditoria() || historialAuditoria()!.length === 0) {
             <p class="empty-docs">Sin registros de auditoría</p>
           } @else {
@@ -196,8 +214,8 @@
         <div class="visor-header">
           <span class="visor-nombre">{{ docVisor()!.nombre }}</span>
           <div style="display:flex;gap:8px;align-items:center">
-            <a [href]="docVisor()!.url" target="_blank" class="btn-sm">⬇ Descargar</a>
-            <button class="visor-close" (click)="cerrarVisor()">✕</button>
+            <a [href]="docVisor()!.url" target="_blank" class="btn-sm"><svg lucideDownload [size]="13"></svg> Descargar</a>
+            <button class="visor-close" (click)="cerrarVisor()">×</button>
           </div>
         </div>
         <div class="visor-body">
@@ -207,9 +225,9 @@
             <img [src]="docVisor()!.url" class="visor-img" [alt]="docVisor()!.nombre"/>
           } @else {
             <div class="visor-no-preview">
-              <span>📄 Vista previa no disponible para este tipo de archivo</span>
+              <span><svg lucideFileText [size]="15"></svg> Vista previa no disponible para este tipo de archivo</span>
               <a [href]="docVisor()!.url" target="_blank" class="btn-primary" style="margin-top:16px">
-                ⬇ Descargar para ver
+                <svg lucideDownload [size]="14"></svg> Descargar para ver
               </a>
             </div>
           }

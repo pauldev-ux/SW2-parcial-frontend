@@ -9,10 +9,20 @@ import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Tramite, Documento } from '../../../shared/models';
 import { FormularioDinamicoComponent } from '../../../shared/components/formulario-dinamico/formulario-dinamico.component';
+import {
+  LucideSparkles, LucideUser, LucideRefreshCw, LucideArrowRight, LucideClipboardList,
+  LucidePaperclip, LucideClock, LucideChevronUp, LucideBarChart3, LucideLoaderCircle,
+  LucideTrash2, LucideFileText, LucideDownload, LucideCircleCheck, LucideCheck
+} from '@lucide/angular';
 
 @Component({
   selector: 'app-tramite-seguimiento',
-  imports: [RouterLink, FormsModule, SlicePipe, FormularioDinamicoComponent],
+  imports: [
+    RouterLink, FormsModule, SlicePipe, FormularioDinamicoComponent,
+    LucideSparkles, LucideUser, LucideRefreshCw, LucideArrowRight, LucideClipboardList,
+    LucidePaperclip, LucideClock, LucideChevronUp, LucideBarChart3, LucideLoaderCircle,
+    LucideTrash2, LucideFileText, LucideDownload, LucideCircleCheck, LucideCheck
+  ],
   templateUrl: './tramite-seguimiento.component.html',
   styleUrl: './tramite-seguimiento.component.css'
 })
@@ -97,9 +107,9 @@ export class TramiteSeguimientoComponent implements OnInit {
 
   iconoHistorialTramite(tipo: string): string {
     const iconos: Record<string, string> = {
-      CREADO: '🆕', ASIGNADO: '👤', ESTADO_CAMBIADO: '🔁', ACTIVIDAD_AVANZO: '➡️',
+      CREADO: 'sparkles', ASIGNADO: 'user', ESTADO_CAMBIADO: 'refresh-cw', ACTIVIDAD_AVANZO: 'arrow-right',
     };
-    return iconos[tipo] ?? '📋';
+    return iconos[tipo] ?? 'clipboard-list';
   }
 
   toggleDocsTramite(tramiteId: string, event: Event): void {

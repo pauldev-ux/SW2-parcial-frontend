@@ -1,3 +1,64 @@
+:root {
+  /* Primario (indigo vivido, calibrado para contraste sobre fondo oscuro) */
+  --color-primary-50:  rgba(99, 102, 241, 0.14);
+  --color-primary-100: rgba(99, 102, 241, 0.24);
+  --color-primary-200: rgba(99, 102, 241, 0.38);
+  --color-primary-300: rgba(99, 102, 241, 0.55);
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-text-on: #ffffff;
+
+  /* Exito */
+  --color-success:        #34d058;
+  --color-success-dark:   #16a34a;
+  --color-success-bg:     rgba(34, 197, 94, 0.22);
+  --color-success-border: rgba(34, 197, 94, 0.45);
+
+  /* Error / destructivo */
+  --color-error:        #ff6b6b;
+  --color-error-dark:   #ef4444;
+  --color-error-bg:     rgba(239, 68, 68, 0.22);
+  --color-error-border: rgba(239, 68, 68, 0.45);
+
+  /* Urgente (rosa vivido, distinto de "error") */
+  --color-urgent:        #fb7185;
+  --color-urgent-bg:     rgba(244, 63, 94, 0.22);
+  --color-urgent-border: rgba(244, 63, 94, 0.45);
+
+  /* Advertencia */
+  --color-warning:        #fbbf24;
+  --color-warning-dark:   #f59e0b;
+  --color-warning-bg:     rgba(245, 158, 11, 0.22);
+  --color-warning-bg-alt: rgba(245, 158, 11, 0.12);
+  --color-warning-border: rgba(245, 158, 11, 0.45);
+
+  /* Informacion (azul cielo, distinto del indigo primario) */
+  --color-info:        #38bdf8;
+  --color-info-dark:   #0ea5e9;
+  --color-info-bg:     rgba(14, 165, 233, 0.22);
+  --color-info-border: rgba(14, 165, 233, 0.45);
+
+  /* Acento violeta (decorativo, no es estado) */
+  --color-accent:        #c084fc;
+  --color-accent-bg:     rgba(168, 85, 247, 0.22);
+  --color-accent-border: rgba(168, 85, 247, 0.45);
+
+  /* Neutros - texto (gris frio sobre fondo slate medio) */
+  --color-text-primary:   #eef0f8;
+  --color-text-secondary: #aab2ce;
+  --color-text-tertiary:  #7d85a8;
+  --color-text-disabled:  #565f84;
+
+  /* Neutros - bordes y fondos (slate medio, no negro puro) */
+  --color-border:       #384169;
+  --color-border-light: #2b3457;
+  --color-bg-subtle:    #202a48;
+  --color-bg-page:      #161d33;
+  --color-surface:      #1e2745;
+  --color-surface-alt:  #263054;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -8,11 +69,52 @@ html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
-  color: #212121;
-  background: #fafafa;
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
   -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; }
 button { font-family: inherit; }
-input, select, textarea { font-family: inherit; }
+input, select, textarea {
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  accent-color: var(--color-primary-500);
+}
+input::placeholder, textarea::placeholder { color: var(--color-text-tertiary); }
+input:disabled, select:disabled, textarea:disabled { opacity: 0.6; cursor: not-allowed; }
+select option { background: var(--color-surface); color: var(--color-text-primary); }
+
+::selection {
+  background: var(--color-primary-600);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+svg.lucide {
+  vertical-align: -3px;
+  flex-shrink: 0;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

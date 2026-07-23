@@ -10,6 +10,15 @@ interface DiagramData { lanes: DiagramLane[]; nodes: DiagramNode[]; connections:
 
 const LANE_HEIGHT = 160;
 
+const LANE_COLORS = [
+  'rgba(59,130,246,0.24)',
+  'rgba(34,197,94,0.24)',
+  'rgba(245,158,11,0.24)',
+  'rgba(168,85,247,0.24)',
+  'rgba(244,63,94,0.24)',
+  'rgba(6,182,212,0.24)',
+];
+
 @Component({
   selector: 'app-politica-ver',
   standalone: true,
@@ -64,30 +73,30 @@ const LANE_HEIGHT = 160;
   `,
   styles: [`
 .ver-page { display:flex; flex-direction:column; height:100vh; overflow:hidden; font-family:var(--font-sans,sans-serif); }
-.ver-header { display:flex; align-items:center; gap:12px; padding:10px 16px; background:#1a237e; color:#fff; flex-wrap:wrap; }
+.ver-header { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--color-primary-500); color:#fff; flex-wrap:wrap; }
 .ver-title { flex:1; display:flex; flex-direction:column; gap:2px; }
 .ver-title h1 { margin:0; font-size:15px; font-weight:500; color:#fff; }
 .ver-desc { font-size:12px; opacity:0.75; }
 .btn-back { color:#fff; text-decoration:none; font-size:13px; opacity:0.8; white-space:nowrap; }
 .ws-status { display:flex; align-items:center; gap:6px; font-size:0.82rem; opacity:0.85; }
-.dot { width:8px; height:8px; border-radius:50%; background:#ccc; }
-.dot.online { background:#4caf50; }
-.error-bar { background:#ffebee; color:#c62828; padding:6px 16px; font-size:13px; }
-.loading-msg { padding:40px; text-align:center; color:#888; }
-.canvas-wrap { flex:1; overflow:auto; background:#f8f8f8; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--color-border); }
+.dot.online { background:var(--color-success); }
+.error-bar { background:var(--color-error-bg); color:var(--color-error); padding:6px 16px; font-size:13px; }
+.loading-msg { padding:40px; text-align:center; color:var(--color-text-tertiary); }
+.canvas-wrap { flex:1; overflow:auto; background:var(--color-bg-page); }
 .diag-canvas { position:relative; width:1100px; }
 .svg-layer { position:absolute; top:0; left:0; width:100%; pointer-events:none; z-index:5; }
-.lane { position:absolute; left:0; right:0; border-bottom:1px solid #ccc; box-sizing:border-box; }
-.lane-label-wrap { position:absolute; left:0; top:0; width:90px; height:100%; display:flex; align-items:center; justify-content:center; border-right:1px solid #ccc; padding:4px; }
-.lane-label { font-size:11px; font-weight:500; color:#444; text-align:center; word-break:break-word; }
+.lane { position:absolute; left:0; right:0; border-bottom:1px solid var(--color-border); box-sizing:border-box; }
+.lane-label-wrap { position:absolute; left:0; top:0; width:90px; height:100%; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--color-border); padding:4px; }
+.lane-label { font-size:11px; font-weight:500; color:var(--color-text-primary); text-align:center; word-break:break-word; }
 .node { position:absolute; display:flex; align-items:center; justify-content:center; text-align:center; font-size:11px; font-weight:500; z-index:10; user-select:none; }
-.node-inicio { width:32px; height:32px; border-radius:50%; background:#333; color:#fff; }
-.node-fin { width:32px; height:32px; border-radius:50%; background:#333; border:3px solid #000; }
-.node-actividad { width:120px; height:44px; border-radius:8px; background:#fff; border:1.5px solid #1a237e; color:#0d2b8e; padding:4px 8px; word-break:break-word; }
-.node-decision { width:56px; height:56px; background:#fff; border:1.5px solid #f57f17; transform:rotate(45deg); }
-.node-fork, .node-join { width:90px; height:16px; background:#212121; border-radius:2px; }
+.node-inicio { width:32px; height:32px; border-radius:50%; background:var(--color-success); color:#fff; }
+.node-fin { width:32px; height:32px; border-radius:50%; background:var(--color-primary-700); border:3px solid var(--color-border); }
+.node-actividad { width:120px; height:44px; border-radius:8px; background:var(--color-surface); border:1.5px solid var(--color-primary-500); color:var(--color-primary-600); padding:4px 8px; word-break:break-word; }
+.node-decision { width:56px; height:56px; background:var(--color-surface); border:1.5px solid var(--color-warning); transform:rotate(45deg); }
+.node-fork, .node-join { width:90px; height:16px; background:var(--color-primary-700); border-radius:2px; }
 .forkjoin-label { color:#fff; font-size:9px; letter-spacing:1px; font-weight:700; }
-.decision-label { display:block; transform:rotate(-45deg); font-size:10px; color:#5d4037; }
+.decision-label { display:block; transform:rotate(-45deg); font-size:10px; color:var(--color-warning-dark); }
   `]
 })
 export class PoliticaVerComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -144,7 +153,7 @@ export class PoliticaVerComponent implements OnInit, AfterViewInit, OnDestroy {
     if (p.diagramJson) {
       try {
         const data: DiagramData = JSON.parse(p.diagramJson);
-        this.lanes.set(data.lanes ?? []);
+        this.lanes.set((data.lanes ?? []).map((l, i) => ({ ...l, color: LANE_COLORS[i % LANE_COLORS.length] })));
         this.nodes.set(data.nodes ?? []);
         this.connections.set(data.connections ?? []);
       } catch {}
@@ -170,7 +179,7 @@ export class PoliticaVerComponent implements OnInit, AfterViewInit, OnDestroy {
     const nodes = this.nodes();
     const getW = (n: DiagramNode) => n.type === 'actividad' ? 120 : n.type === 'decision' ? 56 : (n.type === 'fork' || n.type === 'join') ? 90 : 32;
     const getH = (n: DiagramNode) => n.type === 'actividad' ? 44 : n.type === 'decision' ? 56 : (n.type === 'fork' || n.type === 'join') ? 16 : 32;
-    svg.innerHTML = '<defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1a237e"/></marker></defs>';
+    svg.innerHTML = '<defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="var(--color-primary-500)"/></marker></defs>';
     this.connections().forEach(c => {
       const fn = nodes.find(n => n.id === c.from);
       const tn = nodes.find(n => n.id === c.to);
@@ -180,7 +189,7 @@ export class PoliticaVerComponent implements OnInit, AfterViewInit, OnDestroy {
       const mx = (x1 + x2) / 2;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
-      path.setAttribute('stroke', '#1a237e');
+      path.setAttribute('stroke', 'var(--color-primary-500)');
       path.setAttribute('stroke-width', '1.5');
       path.setAttribute('fill', 'none');
       path.setAttribute('marker-end', 'url(#arr)');

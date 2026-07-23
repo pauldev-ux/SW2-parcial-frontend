@@ -1,21 +1,21 @@
 <div class="audio-recorder">
   @if (estado() === 'idle' || estado() === 'error') {
-    <button class="ar-btn ar-btn-grabar" (click)="iniciarGrabacion()">🎤 Grabar</button>
+    <button class="ar-btn ar-btn-grabar" (click)="iniciarGrabacion()"><svg lucideMic [size]="14"></svg> Grabar</button>
   }
   @if (estado() === 'grabando') {
-    <button class="ar-btn ar-btn-detener" (click)="detenerGrabacion()">⏹ Detener</button>
+    <button class="ar-btn ar-btn-detener" (click)="detenerGrabacion()"><svg lucideSquare [size]="14"></svg> Detener</button>
     <span class="ar-estado grabando">● grabando...</span>
   }
   @if (estado() === 'procesando') {
-    <span class="ar-estado procesando">⏳ procesando...</span>
+    <span class="ar-estado procesando"><svg lucideLoaderCircle [size]="14" class="spin"></svg> procesando...</span>
   }
   @if (estado() === 'listo') {
-    <button class="ar-btn ar-btn-grabar" (click)="reiniciar()">🎤 Grabar</button>
-    <span class="ar-estado listo">✅ transcripción obtenida</span>
+    <button class="ar-btn ar-btn-grabar" (click)="reiniciar()"><svg lucideMic [size]="14"></svg> Grabar</button>
+    <span class="ar-estado listo"><svg lucideCircleCheck [size]="14"></svg> transcripción obtenida</span>
   }
   @if (errorMsg()) {
     <span class="ar-estado error">{{ errorMsg() }}</span>
-    <button class="ar-btn ar-btn-grabar" (click)="reiniciar()">🎤 Grabar</button>
+    <button class="ar-btn ar-btn-grabar" (click)="reiniciar()"><svg lucideMic [size]="14"></svg> Grabar</button>
   }
   @if (transcripcion()) {
     <div class="ar-transcripcion">{{ transcripcion() }}</div>

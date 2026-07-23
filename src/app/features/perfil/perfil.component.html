@@ -14,10 +14,16 @@
     <!-- Email Section -->
     <div class="perfil-section">
       <div class="section-header" (click)="toggleSeccion('email')">
-        <span>📧 Email</span>
+        <span><svg lucideMail [size]="15"></svg> Email</span>
         <div class="section-header-right">
           <span class="section-value">{{ email }}</span>
-          <span class="section-chevron">{{ seccionAbierta === 'email' ? '▲' : '▼' }}</span>
+          <span class="section-chevron">
+            @if (seccionAbierta === 'email') {
+              <svg lucideChevronUp [size]="14"></svg>
+            } @else {
+              <svg lucideChevronDown [size]="14"></svg>
+            }
+          </span>
         </div>
       </div>
       @if (seccionAbierta === 'email') {
@@ -27,7 +33,7 @@
             <input type="email" [(ngModel)]="emailNuevo" [placeholder]="email"/>
           </div>
           @if (successInfo()) {
-            <div class="alert-success">✅ {{ successInfo() }}</div>
+            <div class="alert-success"><svg lucideCircleCheck [size]="14"></svg> {{ successInfo() }}</div>
           }
           @if (errorInfo()) {
             <div class="alert-error">{{ errorInfo() }}</div>
@@ -45,10 +51,16 @@
     <!-- Password Section -->
     <div class="perfil-section">
       <div class="section-header" (click)="toggleSeccion('password')">
-        <span>🔒 Contraseña</span>
+        <span><svg lucideLock [size]="15"></svg> Contraseña</span>
         <div class="section-header-right">
           <span class="section-value">••••••••</span>
-          <span class="section-chevron">{{ seccionAbierta === 'password' ? '▲' : '▼' }}</span>
+          <span class="section-chevron">
+            @if (seccionAbierta === 'password') {
+              <svg lucideChevronUp [size]="14"></svg>
+            } @else {
+              <svg lucideChevronDown [size]="14"></svg>
+            }
+          </span>
         </div>
       </div>
       @if (seccionAbierta === 'password') {
@@ -65,7 +77,7 @@
             }
           </div>
           @if (successPassword()) {
-            <div class="alert-success">✅ {{ successPassword() }}</div>
+            <div class="alert-success"><svg lucideCircleCheck [size]="14"></svg> {{ successPassword() }}</div>
           }
           @if (errorPassword()) {
             <div class="alert-error">{{ errorPassword() }}</div>

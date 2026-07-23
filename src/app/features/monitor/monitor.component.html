@@ -10,7 +10,7 @@
     <div class="monitor-resumen">
       <div class="resumen-chip chip-pendiente"><span class="chip-num">{{ resumen.pendientes }}</span><span class="chip-label">Pendientes</span></div>
       <div class="resumen-chip chip-proceso"><span class="chip-num">{{ resumen.enProceso }}</span><span class="chip-label">En proceso</span></div>
-      <div class="resumen-chip chip-urgente"><span class="chip-num">{{ resumen.urgentes }}</span><span class="chip-label">🔥 Urgentes</span></div>
+      <div class="resumen-chip chip-urgente"><span class="chip-num">{{ resumen.urgentes }}</span><span class="chip-label"><svg lucideFlame [size]="13"></svg> Urgentes</span></div>
       <div class="resumen-chip chip-finalizada"><span class="chip-num">{{ resumen.finalizadas }}</span><span class="chip-label">Finalizadas</span></div>
     </div>
   }
@@ -19,7 +19,7 @@
     <p class="loading-msg">Cargando actividades...</p>
   } @else if (actividades().length === 0) {
     <div class="empty-state">
-      <p>✅ No hay actividades pendientes en tu departamento.</p>
+      <p><svg lucideCircleCheck [size]="15"></svg> No hay actividades pendientes en tu departamento.</p>
     </div>
   } @else {
     <div class="tramites-list">
@@ -29,7 +29,11 @@
           <div class="folder-header" (click)="toggleTramite(tramiteId)">
             <div class="folder-left">
               <span class="folder-icon">
-                {{ isTramiteExpandido(tramiteId) ? '📂' : '📁' }}
+                @if (isTramiteExpandido(tramiteId)) {
+                  <svg lucideFolderOpen [size]="16"></svg>
+                } @else {
+                  <svg lucideFolder [size]="16"></svg>
+                }
               </span>
               <div class="folder-info">
                 <span class="folder-title">Trámite #{{ tramiteId.substring(0,8) }}...</span>
@@ -39,7 +43,11 @@
             <div class="folder-right">
               <span class="folder-count">{{ acts.length }} actividades</span>
               <span class="folder-chevron">
-                {{ isTramiteExpandido(tramiteId) ? '▲' : '▼' }}
+                @if (isTramiteExpandido(tramiteId)) {
+                  <svg lucideChevronUp [size]="14"></svg>
+                } @else {
+                  <svg lucideChevronDown [size]="14"></svg>
+                }
               </span>
             </div>
           </div>
@@ -52,22 +60,26 @@
                   <div class="card-header">
                     <span class="card-nombre">{{ a.nombre }}</span>
                     @if (esUrgente(a)) {
-                      <span class="badge badge-urgente">🔥 URGENTE</span>
+                      <span class="badge badge-urgente"><svg lucideFlame [size]="12"></svg> URGENTE</span>
                     } @else {
                       <span [class]="'badge ' + getEstadoClass(a.estado)">{{ a.estado }}</span>
                     }
                   </div>
                   <div class="card-body">
                     @if (a.nombreDepartamento) {
-                      <p class="card-depto">📁 {{ a.nombreDepartamento }}</p>
+                      <p class="card-depto"><svg lucideFolder [size]="12"></svg> {{ a.nombreDepartamento }}</p>
                     }
                     @if (a.formularioDefinicion?.length > 0) {
-                      <p class="card-form-hint">📋 {{ a.formularioDefinicion.length }} campo(s)</p>
+                      <p class="card-form-hint"><svg lucideClipboardList [size]="12"></svg> {{ a.formularioDefinicion.length }} campo(s)</p>
                     }
                   </div>
                   <div class="card-footer">
                     <button class="btn-atender" [disabled]="a.estado === 'COMPLETADO'">
-                      {{ a.estado === 'COMPLETADO' ? '✓ Completada' : 'Atender' }}
+                      @if (a.estado === 'COMPLETADO') {
+                        <svg lucideCheck [size]="13"></svg> Completada
+                      } @else {
+                        Atender
+                      }
                     </button>
                   </div>
                 </div>
@@ -89,15 +101,15 @@
           <h2>
             {{ a.nombre }}
             @if (tieneBorrador(a.id)) {
-              <span class="badge-borrador">💾 Borrador guardado</span>
+              <span class="badge-borrador"><svg lucideSave [size]="12"></svg> Borrador guardado</span>
             }
           </h2>
-          <button class="btn-close" (click)="cerrarModal()">✕</button>
+          <button class="btn-close" (click)="cerrarModal()">×</button>
         </div>
 
         <div class="modal-meta">
           <span [class]="'badge ' + getEstadoClass(a.estado)">{{ a.estado }}</span>
-          <span class="meta-depto">📁 {{ a.nombreDepartamento || a.rolRequerido }}</span>
+          <span class="meta-depto"><svg lucideFolder [size]="13"></svg> {{ a.nombreDepartamento || a.rolRequerido }}</span>
           <span class="meta-tramite">Trámite: #{{ a.tramiteId?.substring(0,8) }}...</span>
         </div>
 
@@ -108,7 +120,7 @@
         <!-- Datos del cliente (read-only) -->
         @if (getDatosCliente().length > 0) {
           <div class="datos-cliente-section">
-            <h3>👤 Datos del solicitante</h3>
+            <h3><svg lucideUser [size]="16"></svg> Datos del solicitante</h3>
             <div class="datos-cliente-grid">
               @for (dato of getDatosCliente(); track dato.etiqueta) {
                 <div class="dato-item">
@@ -122,7 +134,7 @@
 
         @if (a.formularioDefinicion?.length > 0) {
           <div class="formulario-section">
-            <h3>📋 {{ (a.estado === 'COMPLETADO' || a._soloLectura) ? 'Datos registrados' : 'Completar formulario' }}</h3>
+            <h3><svg lucideClipboardList [size]="16"></svg> {{ (a.estado === 'COMPLETADO' || a._soloLectura) ? 'Datos registrados' : 'Completar formulario' }}</h3>
             <app-formulario-dinamico
               [campos]="a.formularioDefinicion"
               [datos]="datosFormulario"
@@ -138,10 +150,14 @@
         <!-- Documentos adjuntos a esta actividad -->
         <div class="documentos-section">
           <div class="docs-modal-header">
-            <h3>📎 Documentos adjuntos</h3>
+            <h3><svg lucidePaperclip [size]="16"></svg> Documentos adjuntos</h3>
             @if (privSvc.puede('subirDocumentos', privilegiosActivos())) {
               <label class="btn-subir-doc" [class.disabled]="subiendoDoc()">
-                {{ subiendoDoc() ? '⏳ Subiendo...' : '📎 Subir documento' }}
+                @if (subiendoDoc()) {
+                  <svg lucideLoaderCircle [size]="13" class="spin"></svg> Subiendo...
+                } @else {
+                  <svg lucidePaperclip [size]="13"></svg> Subir documento
+                }
                 <input type="file" hidden (change)="subirDocModal($event)" [disabled]="subiendoDoc()"/>
               </label>
             }
@@ -152,10 +168,10 @@
           @for (doc of docsModal(); track doc.id) {
             <div class="doc-modal-item">
               <span class="doc-modal-nombre">{{ doc.nombre }}</span>
-              <button class="btn-ver-doc" (click)="verDocModal(doc)">👁 Ver</button>
-              <a [href]="doc.url" target="_blank" class="btn-doc-descargar">⬇ Descargar</a>
+              <button class="btn-ver-doc" (click)="verDocModal(doc)"><svg lucideEye [size]="13"></svg> Ver</button>
+              <a [href]="doc.url" target="_blank" class="btn-doc-descargar"><svg lucideDownload [size]="13"></svg> Descargar</a>
               @if (privSvc.puede('eliminarDocumentos', privilegiosActivos())) {
-                <button (click)="eliminarDocModal(doc.id)" class="btn-doc-eliminar" title="Eliminar">×</button>
+                <button (click)="eliminarDocModal(doc.id)" class="btn-doc-eliminar" title="Eliminar"><svg lucideX [size]="13"></svg></button>
               }
             </div>
           }
@@ -163,11 +179,20 @@
 
         @if (historialActividad().length > 0) {
           <div class="historial-section">
-            <div class="historial-titulo">📋 Historial de cambios</div>
+            <div class="historial-titulo"><svg lucideClipboardList [size]="15"></svg> Historial de cambios</div>
             <div class="historial-lista">
               @for (entrada of historialActividad(); track $index) {
                 <div class="historial-entrada">
-                  <span class="hist-icono">{{ iconoHistorial(entrada.tipo) }}</span>
+                  <span class="hist-icono">
+                    @switch (iconoHistorial(entrada.tipo)) {
+                      @case ('play') { <svg lucidePlay [size]="13"></svg> }
+                      @case ('check') { <svg lucideCheck [size]="13"></svg> }
+                      @case ('save') { <svg lucideSave [size]="13"></svg> }
+                      @case ('paperclip') { <svg lucidePaperclip [size]="13"></svg> }
+                      @case ('pencil') { <svg lucidePencil [size]="13"></svg> }
+                      @default { <svg lucideClipboardList [size]="13"></svg> }
+                    }
+                  </span>
                   <div class="hist-info">
                     <span class="hist-desc">{{ entrada.descripcion }}</span>
                     <span class="hist-meta">
@@ -189,20 +214,20 @@
           <button class="btn-secondary" (click)="cerrarModal()">Cerrar</button>
           @if (!a._soloLectura) {
             @if (a.estado === 'PENDIENTE') {
-              <button class="btn-iniciar" (click)="iniciarActividad()">▶ Iniciar</button>
+              <button class="btn-iniciar" (click)="iniciarActividad()"><svg lucidePlay [size]="13"></svg> Iniciar</button>
             }
             @if (a.estado === 'EN_PROCESO' || a.estado === 'PENDIENTE') {
               <button class="btn-borrador"
                       [disabled]="guardandoBorrador()"
                       (click)="guardarBorrador()">
-                @if (guardandoBorrador()) { ⏳ Guardando... }
-                @else if (borradorGuardado()) { ✅ Borrador guardado }
-                @else { 💾 Guardar borrador }
+                @if (guardandoBorrador()) { <svg lucideLoaderCircle [size]="13" class="spin"></svg> Guardando... }
+                @else if (borradorGuardado()) { <svg lucideCircleCheck [size]="13"></svg> Borrador guardado }
+                @else { <svg lucideSave [size]="13"></svg> Guardar borrador }
               </button>
-              <button class="btn-completar" (click)="completarActividad()">✓ Completar</button>
+              <button class="btn-completar" (click)="completarActividad()"><svg lucideCheck [size]="13"></svg> Completar</button>
             }
           } @else {
-            <span class="solo-lectura-badge">👁 Solo lectura</span>
+            <span class="solo-lectura-badge"><svg lucideEye [size]="12"></svg> Solo lectura</span>
           }
         </div>
       }
@@ -216,8 +241,8 @@
       <div class="visor-header-mon">
         <span>{{ docVisorModal()!.nombre }}</span>
         <div style="display:flex;gap:8px;align-items:center">
-          <a [href]="docVisorModal()!.url" target="_blank" class="btn-sm-mon">⬇</a>
-          <button (click)="cerrarVisorModal()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;">✕</button>
+          <a [href]="docVisorModal()!.url" target="_blank" class="btn-sm-mon"><svg lucideDownload [size]="13"></svg></a>
+          <button (click)="cerrarVisorModal()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;"><svg lucideX [size]="13"></svg></button>
         </div>
       </div>
       <div class="visor-body-mon">
@@ -226,9 +251,9 @@
         } @else if (esImagen(docVisorModal()!)) {
           <img [src]="docVisorModal()!.url" style="max-width:100%;max-height:100%;object-fit:contain;padding:16px;" [alt]="docVisorModal()!.nombre"/>
         } @else {
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#666;font-size:14px;">
-            <span>📄 Vista previa no disponible</span>
-            <a [href]="docVisorModal()!.url" target="_blank" class="btn-sm-mon">⬇ Descargar</a>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--color-text-secondary);font-size:14px;">
+            <span><svg lucideFileText [size]="15"></svg> Vista previa no disponible</span>
+            <a [href]="docVisorModal()!.url" target="_blank" class="btn-sm-mon"><svg lucideDownload [size]="13"></svg> Descargar</a>
           </div>
         }
       </div>

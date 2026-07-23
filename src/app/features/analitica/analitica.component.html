@@ -1,6 +1,6 @@
 <div class="analitica-page">
   <div class="page-header">
-    <h1>📊 Analítica y Cuellos de Botella</h1>
+    <h1><svg lucideBarChart3 [size]="22"></svg> Analítica y Cuellos de Botella</h1>
   </div>
 
   @if (loading()) {
@@ -44,7 +44,7 @@
               <div class="bar-track">
                 <div class="bar-fill"
                      [style.width.%]="barWidth(entry[1], maxValue(d.tramitesPorEstado))"
-                     [style.background]="estadoColores[entry[0]] ?? '#9ca3af'">
+                     [style.background]="estadoColores[entry[0]] ?? 'var(--color-text-tertiary)'">
                 </div>
               </div>
               <span class="bar-count">{{ entry[1] }}</span>
@@ -62,7 +62,7 @@
               <div class="bar-track">
                 <div class="bar-fill"
                      [style.width.%]="barWidth(entry[1], maxValue(d.actividadesPorEstado))"
-                     [style.background]="estadoColores[entry[0]] ?? '#9ca3af'">
+                     [style.background]="estadoColores[entry[0]] ?? 'var(--color-text-tertiary)'">
                 </div>
               </div>
               <span class="bar-count">{{ entry[1] }}</span>
@@ -75,17 +75,23 @@
 
     <!-- FILA 3: Cuellos de botella reales -->
     <div class="chart-card chart-wide">
-      <h2>🚧 Cuellos de botella detectados
+      <h2><svg lucideClock [size]="18"></svg> Cuellos de botella detectados
         <span class="subtitle">— pasos con ≥2 tareas activas y espera/duración por encima del umbral (24h medio / 72h alto)</span>
       </h2>
       @if (d.cuellosBotella.length === 0) {
-        <p class="sin-cuellos">✅ No se detectaron cuellos de botella con los datos actuales.</p>
+        <p class="sin-cuellos"><svg lucideCircleCheck [size]="14"></svg> No se detectaron cuellos de botella con los datos actuales.</p>
       } @else {
         <div class="cuellos-list">
           @for (c of d.cuellosBotella; track c.nombreActividad + c.departamento) {
             <div class="cuello-row" [class.cuello-alto]="c.nivel === 'ALTO'" [class.cuello-medio]="c.nivel === 'MEDIO'">
               <div class="cuello-main">
-                <span class="cuello-nivel">{{ c.nivel === 'ALTO' ? '🔴 ALTO' : '🟠 MEDIO' }}</span>
+                <span class="cuello-nivel">
+                  @if (c.nivel === 'ALTO') {
+                    <svg lucideOctagonAlert [size]="13"></svg> ALTO
+                  } @else {
+                    <svg lucideTriangleAlert [size]="13"></svg> MEDIO
+                  }
+                </span>
                 <span class="cuello-nombre">{{ c.nombreActividad }}</span>
                 <span class="cuello-depto">{{ c.departamento }}</span>
               </div>
@@ -95,12 +101,12 @@
                 <span>duración histórica: <b>{{ c.duracionPromedioHoras | number:'1.0-0' }}h</b></span>
               </div>
               @if (loadingCuellosIA()) {
-                <p class="cuello-ia-loading">🤖 Analizando con IA...</p>
+                <p class="cuello-ia-loading"><svg lucideBot [size]="14"></svg> Analizando con IA...</p>
               } @else if (cuellosIA()[c.nombreActividad]; as ia) {
                 <div class="cuello-ia">
-                  <p><b>🤖 Motivo:</b> {{ ia.motivo }}</p>
-                  <p><b>📈 Impacto:</b> {{ ia.impacto }}</p>
-                  <p><b>💡 Recomendación:</b> {{ ia.recomendacion }}</p>
+                  <p><b><svg lucideBot [size]="13"></svg> Motivo:</b> {{ ia.motivo }}</p>
+                  <p><b><svg lucideTrendingUp [size]="13"></svg> Impacto:</b> {{ ia.impacto }}</p>
+                  <p><b><svg lucideLightbulb [size]="13"></svg> Recomendación:</b> {{ ia.recomendacion }}</p>
                 </div>
               }
             </div>
@@ -129,7 +135,7 @@
 
     <!-- FILA 4: Motor TensorFlow -->
     <div class="chart-card chart-wide tf-section">
-      <h2>🤖 Motor TensorFlow — Predicciones genéricas
+      <h2><svg lucideBot [size]="18"></svg> Motor TensorFlow — Predicciones genéricas
         <span class="subtitle">— modelo entrenado con datos sintéticos de ejemplo; no analiza los cuellos de botella reales de arriba</span>
       </h2>
       @if (loadingTF()) {
@@ -138,7 +144,7 @@
         <div class="tf-cards">
           <!-- Tiempo estimado -->
           <div class="tf-card tf-tiempo">
-            <div class="tf-icon">⏱️</div>
+            <div class="tf-icon"><svg lucideClock [size]="20"></svg></div>
             <div class="tf-label">Tiempo estimado</div>
             @if (tfTiempo(); as t) {
               <div class="tf-value">{{ t.tiempo_estimado_horas | number:'1.1-1' }} <small>horas</small></div>
@@ -149,7 +155,13 @@
           </div>
           <!-- Anomalía -->
           <div class="tf-card" [class.tf-anomalia-alerta]="tfAnomalia()?.es_anomalia" [class.tf-anomalia-ok]="!tfAnomalia()?.es_anomalia">
-            <div class="tf-icon">{{ tfAnomalia()?.es_anomalia ? '🚨' : '✅' }}</div>
+            <div class="tf-icon">
+              @if (tfAnomalia()?.es_anomalia) {
+                <svg lucideTriangleAlert [size]="20"></svg>
+              } @else {
+                <svg lucideCircleCheck [size]="20"></svg>
+              }
+            </div>
             <div class="tf-label">Detección de anomalías</div>
             @if (tfAnomalia(); as a) {
               <div class="tf-value">{{ a.es_anomalia ? 'Anomalía detectada' : 'Sin anomalías' }}</div>
@@ -160,7 +172,7 @@
           </div>
           <!-- Probabilidad de éxito -->
           <div class="tf-card tf-exito">
-            <div class="tf-icon">🎯</div>
+            <div class="tf-icon"><svg lucideTarget [size]="20"></svg></div>
             <div class="tf-label">Probabilidad de éxito</div>
             @if (tfExito(); as e) {
               <div class="tf-value">{{ (e.probabilidad * 100) | number:'1.0-0' }}<small>%</small></div>

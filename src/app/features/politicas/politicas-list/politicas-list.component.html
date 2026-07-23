@@ -34,12 +34,12 @@
               <a [routerLink]="['editar', p.id]" class="btn-sm">Editar</a>
               <a [routerLink]="['ver', p.id]" class="btn-sm btn-ver">Ver</a>
               <a [routerLink]="['/politicas/colaborar', p.id]" class="btn-sm btn-colaborar">
-                👥 Colaborar
+                <svg lucideUsers [size]="13"></svg> Colaborar
               </a>
               <button class="btn-sm btn-toggle" (click)="toggleActiva(p)">
                 {{ p.activa ? 'Desactivar' : 'Activar' }}
               </button>
-              <button class="btn-sm btn-danger" (click)="eliminar(p.id)">Eliminar</button>
+              <button class="btn-sm btn-danger" (click)="eliminar(p.id)"><svg lucideTrash2 [size]="13"></svg> Eliminar</button>
             </td>
           </tr>
         }

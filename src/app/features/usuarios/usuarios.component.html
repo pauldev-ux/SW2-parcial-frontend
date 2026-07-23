@@ -44,7 +44,7 @@
                 <button class="btn-sm btn-toggle" (click)="toggleActivo(u)">
                   {{ u.activo ? 'Desactivar' : 'Activar' }}
                 </button>
-                <button class="btn-sm btn-eliminar" (click)="eliminar(u)">Eliminar</button>
+                <button class="btn-sm btn-eliminar" (click)="eliminar(u)"><svg lucideTrash2 [size]="13"></svg> Eliminar</button>
               </td>
             </tr>
           } @empty {
@@ -61,7 +61,7 @@
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ modoEdicion() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
-        <button class="modal-close" (click)="cerrarModal()">✕</button>
+        <button class="modal-close" (click)="cerrarModal()">×</button>
       </div>
 
       @if (error()) { <p class="error-msg">{{ error() }}</p> }

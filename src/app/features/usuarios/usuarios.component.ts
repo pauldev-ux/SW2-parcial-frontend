@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { Usuario, Departamento } from '../../shared/models';
+import { LucideTrash2 } from '@lucide/angular';
 
 interface UsuarioForm {
   username: string;
@@ -15,7 +16,7 @@ interface UsuarioForm {
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideTrash2],
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.css'
 })

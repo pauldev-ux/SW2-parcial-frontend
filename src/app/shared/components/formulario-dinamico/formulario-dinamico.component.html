@@ -1,7 +1,7 @@
 <div class="formdyn">
   @if (mostrarIA && !soloLectura) {
     <div class="ia-datos-wrap">
-      <div class="ia-datos-header">🤖 Completar con IA</div>
+      <div class="ia-datos-header"><svg lucideBot [size]="15"></svg> Completar con IA</div>
       <div class="ia-datos-body">
         <textarea [(ngModel)]="descripcionDatosIA" rows="2"
                   placeholder="Describe la situación y la IA intentará llenar los campos por ti..."
@@ -10,7 +10,7 @@
                 [disabled]="cargandoDatosIA() || !descripcionDatosIA.trim()">
           {{ cargandoDatosIA() ? 'Completando...' : 'Completar campos' }}
         </button>
-        @if (exitoDatosIA()) { <p class="ia-datos-exito">✅ Campos completados. Revisa antes de confirmar.</p> }
+        @if (exitoDatosIA()) { <p class="ia-datos-exito"><svg lucideCircleCheck [size]="14"></svg> Campos completados. Revisa antes de confirmar.</p> }
         @if (errorDatosIA()) { <p class="ia-datos-error">{{ errorDatosIA() }}</p> }
       </div>
     </div>
@@ -73,7 +73,9 @@
 
         @if (soloLectura) {
           @if (campo.tipo === 'BUTTON') {
-            <div class="valor-readonly">{{ datos[campo.id] ? '✓ Confirmado' : 'No confirmado' }}</div>
+            <div class="valor-readonly">
+              @if (datos[campo.id]) { <svg lucideCheck [size]="13"></svg> Confirmado } @else { No confirmado }
+            </div>
           } @else {
             <div class="valor-readonly">
               {{ datos[campo.id] !== '' && datos[campo.id] !== false && datos[campo.id] !== null && datos[campo.id] !== undefined ? datos[campo.id] : '—' }}
@@ -121,7 +123,7 @@
             <button type="button" class="btn-campo-accion"
                     [class.confirmado]="datos[campo.id]"
                     (click)="datos[campo.id] = !datos[campo.id]; onCampoChange()">
-              {{ datos[campo.id] ? '✓ ' : '' }}{{ campo.etiqueta }}
+              @if (datos[campo.id]) { <svg lucideCheck [size]="13"></svg> }{{ campo.etiqueta }}
             </button>
           }
         }

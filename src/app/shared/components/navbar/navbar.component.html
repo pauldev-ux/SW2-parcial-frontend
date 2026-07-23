@@ -9,16 +9,16 @@
           <span class="user-avatar">{{ auth.currentUser()!.username.charAt(0).toUpperCase() }}</span>
           <span class="user-name">{{ auth.currentUser()!.username }}</span>
           <span class="user-role-badge">{{ auth.getUserRole() }}</span>
-          <span class="chevron">▾</span>
+          <svg lucideChevronDown class="chevron" [size]="14"></svg>
         </button>
         @if (menuAbierto()) {
           <div class="user-dropdown">
             <a routerLink="/perfil" class="dropdown-item" (click)="cerrarMenu()">
-              👤 Mi Perfil
+              <svg lucideUser [size]="15"></svg> Mi Perfil
             </a>
             <div class="dropdown-divider"></div>
             <button class="dropdown-item danger" (click)="logout(); cerrarMenu()">
-              🚪 Cerrar Sesión
+              <svg lucideLogOut [size]="15"></svg> Cerrar Sesión
             </button>
           </div>
         }

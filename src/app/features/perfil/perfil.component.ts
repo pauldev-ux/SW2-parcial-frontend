@@ -2,11 +2,12 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
+import { LucideMail, LucideLock, LucideCircleCheck, LucideChevronUp, LucideChevronDown } from '@lucide/angular';
 
 @Component({
   selector: 'app-perfil',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, LucideMail, LucideLock, LucideCircleCheck, LucideChevronUp, LucideChevronDown],
   templateUrl: './perfil.component.html',
   styleUrl: './perfil.component.css'
 })

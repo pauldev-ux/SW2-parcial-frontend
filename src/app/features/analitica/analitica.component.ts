@@ -3,6 +3,10 @@ import { DecimalPipe } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { forkJoin } from 'rxjs';
 import { catchError, of } from 'rxjs';
+import {
+  LucideBarChart3, LucideClock, LucideCircleCheck, LucideOctagonAlert, LucideTriangleAlert,
+  LucideBot, LucideTrendingUp, LucideLightbulb, LucideTarget
+} from '@lucide/angular';
 
 interface CuelloBotella {
   nombreActividad: string;
@@ -34,7 +38,10 @@ interface CuelloBotellaIA { tramite: string; nivel: string; motivo: string; impa
 @Component({
   selector: 'app-analitica',
   standalone: true,
-  imports: [DecimalPipe],
+  imports: [
+    DecimalPipe, LucideBarChart3, LucideClock, LucideCircleCheck, LucideOctagonAlert, LucideTriangleAlert,
+    LucideBot, LucideTrendingUp, LucideLightbulb, LucideTarget
+  ],
   templateUrl: './analitica.component.html',
   styleUrl: './analitica.component.css'
 })
@@ -53,12 +60,12 @@ export class AnaliticaComponent implements OnInit {
   loadingCuellosIA = signal(false);
 
   readonly estadoColores: Record<string, string> = {
-    PENDIENTE:   '#f59e0b',
-    EN_PROCESO:  '#3b82f6',
-    COMPLETADO:  '#22c55e',
-    RECHAZADO:   '#ef4444',
-    CANCELADO:   '#9ca3af',
-    OMITIDO:     '#9ca3af',
+    PENDIENTE:   'var(--color-warning)',
+    EN_PROCESO:  'var(--color-info)',
+    COMPLETADO:  'var(--color-success)',
+    RECHAZADO:   'var(--color-error)',
+    CANCELADO:   'var(--color-text-tertiary)',
+    OMITIDO:     'var(--color-text-tertiary)',
   };
 
   ngOnInit() {

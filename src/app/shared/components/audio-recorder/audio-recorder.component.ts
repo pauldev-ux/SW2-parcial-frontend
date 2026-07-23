@@ -1,11 +1,13 @@
 import { Component, EventEmitter, Output, signal, inject, OnDestroy } from '@angular/core';
 import { NlpService, CampoSugerido } from '../../../core/services/nlp.service';
+import { LucideMic, LucideSquare, LucideLoaderCircle, LucideCircleCheck } from '@lucide/angular';
 
 type EstadoGrabacion = 'idle' | 'grabando' | 'procesando' | 'listo' | 'error';
 
 @Component({
   selector: 'app-audio-recorder',
   standalone: true,
+  imports: [LucideMic, LucideSquare, LucideLoaderCircle, LucideCircleCheck],
   templateUrl: './audio-recorder.component.html',
   styleUrls: ['./audio-recorder.component.css'],
 })

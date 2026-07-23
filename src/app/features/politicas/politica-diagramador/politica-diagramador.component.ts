@@ -9,6 +9,12 @@ import { DocumentoService } from '../../../core/services/documento.service';
 import { Politica, Documento, PrivilegiosPN } from '../../../shared/models';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import {
+  LucideLink, LucideUser, LucideLock, LucideLoaderCircle, LucideDownload, LucideImage,
+  LucideFileText, LucideBot, LucideFilePlus, LucidePencil, LucideCircleCheck, LucideCheck,
+  LucideClipboardList, LucideShuffle, LucideSparkles, LucidePaperclip, LucideEye, LucideChevronDown,
+  LucideX, LucideUpload, LucideTrash2
+} from '@lucide/angular';
 
 interface DiagramLane {
   id: string;
@@ -68,19 +74,25 @@ interface DiagramData {
 }
 
 const LANE_COLORS = [
-  'rgba(227,242,253,0.4)',
-  'rgba(232,245,233,0.4)',
-  'rgba(255,248,225,0.4)',
-  'rgba(243,229,245,0.4)',
-  'rgba(255,235,238,0.4)',
-  'rgba(224,247,250,0.4)',
+  'rgba(59,130,246,0.24)',
+  'rgba(34,197,94,0.24)',
+  'rgba(245,158,11,0.24)',
+  'rgba(168,85,247,0.24)',
+  'rgba(244,63,94,0.24)',
+  'rgba(6,182,212,0.24)',
 ];
 
 const LANE_HEIGHT = 160;
 
 @Component({
   selector: 'app-politica-diagramador',
-  imports: [FormsModule, RouterLink, AudioRecorderComponent],
+  imports: [
+    FormsModule, RouterLink, AudioRecorderComponent,
+    LucideLink, LucideUser, LucideLock, LucideLoaderCircle, LucideDownload, LucideImage,
+    LucideFileText, LucideBot, LucideFilePlus, LucidePencil, LucideCircleCheck, LucideCheck,
+    LucideClipboardList, LucideShuffle, LucideSparkles, LucidePaperclip, LucideEye, LucideChevronDown,
+    LucideX, LucideUpload, LucideTrash2
+  ],
   template: `
 <div class="diag-page">
   <div class="diag-header">
@@ -91,7 +103,7 @@ const LANE_HEIGHT = 160;
       {{ loading() ? 'Guardando...' : 'Guardar Política' }}
     </button>
     <button class="btn-compartir-diag" (click)="abrirModalCompartir()">
-      🔗 Compartir
+      <svg lucideLink [size]="13"></svg> Compartir
     </button>
     @if (isColaborativo) {
       <div class="colab-bar">
@@ -100,7 +112,7 @@ const LANE_HEIGHT = 160;
           {{ colab.connected() ? 'Colaboración activa' : 'Conectando...' }}
         </span>
         @for (c of colaboradoresActivos(); track c) {
-          <span class="colab-chip">👤 {{ c }}</span>
+          <span class="colab-chip"><svg lucideUser [size]="11"></svg> {{ c }}</span>
         }
       </div>
     }
@@ -109,19 +121,27 @@ const LANE_HEIGHT = 160;
     <input [(ngModel)]="descripcion" placeholder="Descripción..." class="desc-input"/>
     <label><input type="checkbox" [(ngModel)]="activa"/> Activa</label>
     <button class="btn-privilegios" (click)="mostrarPrivilegios.set(!mostrarPrivilegios())">
-      🔒 Privilegios
+      <svg lucideLock [size]="13"></svg> Privilegios
     </button>
   </div>
   @if (mostrarPrivilegios()) {
     <div class="privilegios-panel">
       <div class="priv-header">
-        <span>🔒 Control de Acceso a Documentos</span>
-        <button class="priv-close" (click)="mostrarPrivilegios.set(false)">✕</button>
+        <span><svg lucideLock [size]="15"></svg> Control de Acceso a Documentos</span>
+        <button class="priv-close" (click)="mostrarPrivilegios.set(false)"><svg lucideX [size]="15"></svg></button>
       </div>
       <div class="priv-body">
         @for (permiso of permisosConfig; track permiso.key) {
           <div class="priv-row">
-            <span class="priv-label">{{ permiso.label }}</span>
+            <span class="priv-label">
+              @switch (permiso.key) {
+                @case ('verDocumentos') { <svg lucideEye [size]="13"></svg> }
+                @case ('subirDocumentos') { <svg lucideUpload [size]="13"></svg> }
+                @case ('eliminarDocumentos') { <svg lucideTrash2 [size]="13"></svg> }
+                @case ('aprobar') { <svg lucideCircleCheck [size]="13"></svg> }
+              }
+              {{ permiso.label }}
+            </span>
             <div class="priv-checks">
               @for (rol of rolesDisponibles; track rol) {
                 <label class="priv-check-label">
@@ -153,37 +173,37 @@ const LANE_HEIGHT = 160;
     <button (click)="deleteSelected()" class="tb-btn danger" style="margin-left:8px">Eliminar</button>
     <div class="export-wrap" style="margin-left:12px">
       @if (exportando()) {
-        <span class="tb-btn" style="cursor:default;opacity:0.7">⏳ Exportando...</span>
+        <span class="tb-btn" style="cursor:default;opacity:0.7"><svg lucideLoaderCircle [size]="12" class="spin"></svg> Exportando...</span>
       } @else {
         <button class="tb-btn export-btn" (click)="exportMenuOpen.set(!exportMenuOpen())">
-          ⬇ Exportar ▾
+          <svg lucideDownload [size]="12"></svg> Exportar <svg lucideChevronDown [size]="11"></svg>
         </button>
         @if (exportMenuOpen()) {
           <div class="export-dropdown">
-            <button class="export-option" (click)="exportarPNG()">🖼 PNG</button>
-            <button class="export-option" (click)="exportarPDF()">📄 PDF</button>
+            <button class="export-option" (click)="exportarPNG()"><svg lucideImage [size]="13"></svg> PNG</button>
+            <button class="export-option" (click)="exportarPDF()"><svg lucideFileText [size]="13"></svg> PDF</button>
           </div>
         }
       }
     </div>
     <button class="tb-btn ia-btn" (click)="abrirPanelIA()" style="margin-left:8px">
-      🤖 IA
+      <svg lucideBot [size]="13"></svg> IA
     </button>
-    <span style="margin-left:auto;font-size:12px;color:#888">Pasos: {{ getActividades().length }}</span>
+    <span style="margin-left:auto;font-size:12px;color:var(--color-text-tertiary)">Pasos: {{ getActividades().length }}</span>
   </div>
   @if (mostrarPanelIA()) {
     <div class="ia-panel">
       <div class="ia-panel-header">
-        <span>🤖 Asistente IA</span>
-        <button class="ia-close" (click)="mostrarPanelIA.set(false)">✕</button>
+        <span><svg lucideBot [size]="15"></svg> Asistente IA</span>
+        <button class="ia-close" (click)="mostrarPanelIA.set(false)"><svg lucideX [size]="15"></svg></button>
       </div>
       <div class="ia-panel-body">
         <div class="ia-modo-selector">
           <button class="ia-modo-btn" [class.active]="modoIA() === 'generar'" (click)="modoIA.set('generar')">
-            🆕 Generar nuevo diagrama
+            <svg lucideFilePlus [size]="13"></svg> Generar nuevo diagrama
           </button>
           <button class="ia-modo-btn" [class.active]="modoIA() === 'editar'" (click)="modoIA.set('editar')">
-            ✏️ Modificar diagrama actual
+            <svg lucidePencil [size]="13"></svg> Modificar diagrama actual
           </button>
         </div>
         <p class="ia-hint">
@@ -200,7 +220,7 @@ const LANE_HEIGHT = 160;
           [disabled]="cargandoIA()">
         </textarea>
         @if (iaExito()) {
-          <div class="ia-success">✅ Elementos agregados al diagrama</div>
+          <div class="ia-success"><svg lucideCircleCheck [size]="13"></svg> Elementos agregados al diagrama</div>
         }
         @if (iaError()) {
           <div class="ia-error">{{ iaError() }}</div>
@@ -238,7 +258,7 @@ const LANE_HEIGHT = 160;
               <span class="lane-label" (click)="startEditLane(lane.id)">
                 {{ lane.nombre }}
                 @if (lane.departamentoId) {
-                  <span class="lane-depto-badge">✓</span>
+                  <span class="lane-depto-badge"><svg lucideCheck [size]="10"></svg></span>
                 } @else {
                   <span class="lane-depto-badge warn">!</span>
                 }
@@ -273,10 +293,10 @@ const LANE_HEIGHT = 160;
     <div class="node-drawer">
       <div class="drawer-header">
         <span class="drawer-title">
-          @if (selected.type === 'actividad') { 📋 Actividad }
-          @else if (selected.type === 'decision') { 🔀 Decisión }
+          @if (selected.type === 'actividad') { <svg lucideClipboardList [size]="13"></svg> Actividad }
+          @else if (selected.type === 'decision') { <svg lucideShuffle [size]="13"></svg> Decisión }
         </span>
-        <button class="drawer-close" (click)="selected = null">✕</button>
+        <button class="drawer-close" (click)="selected = null"><svg lucideX [size]="15"></svg></button>
       </div>
       <div class="drawer-body">
       <div class="node-editor-top">
@@ -302,9 +322,9 @@ const LANE_HEIGHT = 160;
       @if (selected.type === 'actividad') {
         <div class="formulario-editor">
           <div class="form-editor-header">
-            <span>📋 Campos del formulario ({{ getFormulario().length }})</span>
+            <span><svg lucideClipboardList [size]="14"></svg> Campos del formulario ({{ getFormulario().length }})</span>
             <div style="display:flex;gap:6px;align-items:center">
-              <button (click)="toggleSugerirCamposIA()" class="btn-sugerir-ia">✨ Sugerir con IA</button>
+              <button (click)="toggleSugerirCamposIA()" class="btn-sugerir-ia"><svg lucideSparkles [size]="12"></svg> Sugerir con IA</button>
               <app-audio-recorder (camposSugeridos)="onCamposSugeridosAudio($event)"></app-audio-recorder>
               <button (click)="addCampo()" class="btn-add-campo">+ Agregar campo</button>
             </div>
@@ -319,7 +339,7 @@ const LANE_HEIGHT = 160;
                 <button (click)="ejecutarSugerirCamposIA()"
                         [disabled]="cargandoCamposIA() || !descripcionCamposIA.trim()"
                         class="btn-sugerir-ejecutar">
-                  @if (cargandoCamposIA()) { ⏳ } @else { Sugerir }
+                  @if (cargandoCamposIA()) { <svg lucideLoaderCircle [size]="12" class="spin"></svg> } @else { Sugerir }
                 </button>
               </div>
               @if (errorSugerirCamposIA()) {
@@ -356,10 +376,10 @@ const LANE_HEIGHT = 160;
                 <option value="SELECT">Lista opciones</option>
                 <option value="CHECKBOX">Checkbox</option>
                 <option value="FILE">Archivo</option>
-                <option value="LABEL">🏷 Etiqueta</option>
-                <option value="BUTTON">🔘 Botón</option>
-                <option value="GRID">▦ Grid (tabla)</option>
-                <option value="DECISION">🔀 Decisión (Sí/No)</option>
+                <option value="LABEL">Etiqueta</option>
+                <option value="BUTTON">Botón</option>
+                <option value="GRID">Grid (tabla)</option>
+                <option value="DECISION">Decisión (Sí/No)</option>
               </select>
               @if (campo.tipo !== 'LABEL') {
                 <label class="campo-req">
@@ -417,9 +437,9 @@ const LANE_HEIGHT = 160;
         </div>
         <div class="docs-actividad-section">
           <div class="docs-act-header">
-            <span>📎 Documentos de la actividad ({{ docsActividad().length }})</span>
+            <span><svg lucidePaperclip [size]="14"></svg> Documentos de la actividad ({{ docsActividad().length }})</span>
             <label class="btn-adj-doc">
-              📎 Adjuntar
+              <svg lucidePaperclip [size]="12"></svg> Adjuntar
               <input type="file" hidden (change)="subirDocActividad($event)" [disabled]="cargandoDocs()"/>
             </label>
           </div>
@@ -430,8 +450,8 @@ const LANE_HEIGHT = 160;
           @for (doc of docsActividad(); track doc.id) {
             <div class="doc-act-row">
               <span class="doc-act-nombre">{{ doc.nombre }}</span>
-              <a [href]="doc.url" target="_blank" class="btn-doc-dl" title="Descargar">⬇</a>
-              <button (click)="eliminarDocActividad(doc.id)" class="btn-doc-del" title="Eliminar">×</button>
+              <a [href]="doc.url" target="_blank" class="btn-doc-dl" title="Descargar"><svg lucideDownload [size]="13"></svg></a>
+              <button (click)="eliminarDocActividad(doc.id)" class="btn-doc-del" title="Eliminar"><svg lucideX [size]="13"></svg></button>
             </div>
           }
         </div>
@@ -439,7 +459,7 @@ const LANE_HEIGHT = 160;
       @if (selected.type === 'decision') {
         <div class="formulario-editor">
           <div class="form-editor-header">
-            <span>🔀 Opciones de decisión ({{ getOpciones().length }})</span>
+            <span><svg lucideShuffle [size]="14"></svg> Opciones de decisión ({{ getOpciones().length }})</span>
             <button (click)="addOpcion()" class="btn-add-campo">+ Opción</button>
           </div>
           @for (op of getOpciones(); track $index; let oi = $index) {
@@ -451,7 +471,7 @@ const LANE_HEIGHT = 160;
         </div>
         <div class="formulario-editor campo-respuesta-editor">
           <div class="form-editor-header">
-            <span>🔗 Campo de respuesta</span>
+            <span><svg lucideLink [size]="14"></svg> Campo de respuesta</span>
           </div>
           <p class="ia-hint" style="margin:0 0 6px">
             Vincula esta decisión a un campo del formulario de la actividad anterior, para que el usuario
@@ -459,8 +479,8 @@ const LANE_HEIGHT = 160;
           </p>
           @if (selected.campoRespuestaId) {
             <div class="campo-respuesta-actual">
-              <span>✅ Vinculado a: {{ getCampoRespuestaLabel() }}</span>
-              <button (click)="desvincularCampoRespuesta()" class="btn-del-campo" title="Desvincular">×</button>
+              <span><svg lucideCircleCheck [size]="13"></svg> Vinculado a: {{ getCampoRespuestaLabel() }}</span>
+              <button (click)="desvincularCampoRespuesta()" class="btn-del-campo" title="Desvincular"><svg lucideX [size]="13"></svg></button>
             </div>
           } @else if (getPredecesoresActividad().length === 0) {
             <span class="no-campos">Conecta este nodo desde una actividad para poder vincular un campo de respuesta.</span>
@@ -479,15 +499,15 @@ const LANE_HEIGHT = 160;
   @if (mostrarModalCompartir()) {
     <div class="modal-overlay-diag" (click)="mostrarModalCompartir.set(false)">
       <div class="modal-compartir-diag" (click)="$event.stopPropagation()">
-        <h3>🔗 Compartir Política</h3>
+        <h3><svg lucideLink [size]="16"></svg> Compartir Política</h3>
         <div class="modo-options">
           <label class="modo-opt" [class.selected]="modoCompartir === 'READONLY'">
             <input type="radio" [(ngModel)]="modoCompartir" value="READONLY"/>
-            👁 Solo lectura
+            <svg lucideEye [size]="13"></svg> Solo lectura
           </label>
           <label class="modo-opt" [class.selected]="modoCompartir === 'COLABORATIVO'">
             <input type="radio" [(ngModel)]="modoCompartir" value="COLABORATIVO"/>
-            ✏️ Colaborativo
+            <svg lucidePencil [size]="13"></svg> Colaborativo
           </label>
         </div>
         @if (errorCompartir()) {
@@ -503,13 +523,17 @@ const LANE_HEIGHT = 160;
             <input type="text" [value]="linkGenerado()" readonly class="link-input-diag"/>
             <button class="btn-copiar-diag" [class.copiado]="linkCopiado()"
                     (click)="copiarLink()">
-              {{ linkCopiado() ? '✅ Copiado' : '📋 Copiar' }}
+              @if (linkCopiado()) {
+                <svg lucideCircleCheck [size]="13"></svg> Copiado
+              } @else {
+                <svg lucideClipboardList [size]="13"></svg> Copiar
+              }
             </button>
           </div>
           @if (modoCompartir === 'COLABORATIVO') {
-            <p class="link-hint-diag">✏️ Solo accesible para administradores.</p>
+            <p class="link-hint-diag"><svg lucidePencil [size]="12"></svg> Solo accesible para administradores.</p>
           } @else {
-            <p class="link-hint-diag">👁 Cualquier usuario puede ver el diagrama.</p>
+            <p class="link-hint-diag"><svg lucideEye [size]="12"></svg> Cualquier usuario puede ver el diagrama.</p>
           }
         }
         <div class="modal-actions-diag">
@@ -523,7 +547,7 @@ const LANE_HEIGHT = 160;
   @if (modalCondicion(); as mc) {
     <div class="modal-overlay-diag" (click)="cancelarModalCondicion()">
       <div class="modal-compartir-diag" (click)="$event.stopPropagation()" style="width:360px">
-        <h3>🔀 ¿Con qué opción corresponde esta rama?</h3>
+        <h3><svg lucideShuffle [size]="16"></svg> ¿Con qué opción corresponde esta rama?</h3>
         <select [ngModel]="mc.valor" (ngModelChange)="actualizarValorModalCondicion($event)"
                 class="lane-select" style="width:100%;margin-bottom:16px">
           @for (op of mc.opciones; track op) {
@@ -541,159 +565,159 @@ const LANE_HEIGHT = 160;
   `,
   styles: [`
 .diag-page { display:flex; flex-direction:column; height:100vh; overflow:hidden; font-family:var(--font-sans); }
-.diag-header { display:flex; align-items:center; gap:10px; padding:8px 16px; background:#1a237e; color:#fff; }
+.diag-header { display:flex; align-items:center; gap:10px; padding:8px 16px; background:var(--color-primary-500); color:#fff; }
 .diag-header h1 { font-size:15px; font-weight:500; margin:0; color:#fff; white-space:nowrap; }
 .btn-back { color:#fff; text-decoration:none; font-size:13px; opacity:0.8; white-space:nowrap; }
 .nombre-input { flex:1; padding:5px 10px; border:1px solid rgba(255,255,255,0.4); border-radius:6px; background:rgba(255,255,255,0.15); color:#fff; font-size:14px; }
 .nombre-input::placeholder { color:rgba(255,255,255,0.5); }
-.btn-save { padding:5px 16px; background:#fff; color:#1a237e; border:none; border-radius:6px; font-weight:500; cursor:pointer; white-space:nowrap; }
-.diag-desc { display:flex; align-items:center; gap:12px; padding:6px 16px; background:#f5f5f5; border-bottom:1px solid #e0e0e0; font-size:13px; }
-.desc-input { flex:1; padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:13px; }
-.error-bar { background:#ffebee; color:#c62828; padding:6px 16px; font-size:13px; }
-.diag-toolbar { display:flex; align-items:center; gap:6px; padding:6px 16px; background:#fafafa; border-bottom:1px solid #e0e0e0; flex-wrap:wrap; }
-.diag-toolbar span { font-size:12px; color:#666; }
-.tb-btn { padding:4px 10px; font-size:12px; border:1px solid #ccc; border-radius:4px; cursor:pointer; background:#fff; }
-.tb-btn:hover { background:#f0f0f0; }
-.tb-btn.active { background:#1a237e; color:#fff; border-color:#1a237e; }
-.tb-btn.danger { color:#c62828; border-color:#ef9a9a; }
-.diag-canvas-wrap { flex:1; overflow:auto; background:#f8f8f8; min-height:0; }
+.btn-save { padding:5px 16px; background:var(--color-surface); color:var(--color-primary-500); border:none; border-radius:6px; font-weight:500; cursor:pointer; white-space:nowrap; }
+.diag-desc { display:flex; align-items:center; gap:12px; padding:6px 16px; background:var(--color-bg-subtle); border-bottom:1px solid var(--color-border); font-size:13px; }
+.desc-input { flex:1; padding:4px 8px; border:1px solid var(--color-border); border-radius:4px; font-size:13px; }
+.error-bar { background:var(--color-error-bg); color:var(--color-error); padding:6px 16px; font-size:13px; }
+.diag-toolbar { display:flex; align-items:center; gap:6px; padding:6px 16px; background:var(--color-bg-page); border-bottom:1px solid var(--color-border); flex-wrap:wrap; }
+.diag-toolbar span { font-size:12px; color:var(--color-text-secondary); }
+.tb-btn { padding:4px 10px; font-size:12px; border:1px solid var(--color-border); border-radius:4px; cursor:pointer; background:var(--color-surface); }
+.tb-btn:hover { background:var(--color-bg-subtle); }
+.tb-btn.active { background:var(--color-primary-500); color:#fff; border-color:var(--color-primary-500); }
+.tb-btn.danger { color:var(--color-error); border-color:var(--color-error-border); }
+.diag-canvas-wrap { flex:1; overflow:auto; background:var(--color-bg-page); min-height:0; }
 .diag-canvas { position:relative; min-width:1100px; }
 .svg-layer { position:absolute; top:0; left:0; width:100%; pointer-events:none; z-index:5; }
-.lane { position:absolute; left:0; right:0; border-bottom:1px solid #ccc; box-sizing:border-box; }
-.lane-label-wrap { position:absolute; left:0; top:0; width:90px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:1px solid #ccc; gap:4px; padding:4px; }
-.lane-label { font-size:11px; font-weight:500; color:#444; text-align:center; cursor:pointer; word-break:break-word; }
-.lane-label:hover { color:#1a237e; text-decoration:underline dotted; }
-.lane-name-input { width:72px; font-size:11px; border:1px solid #9fa8da; border-radius:3px; padding:2px 4px; text-align:center; }
-.lane-del { background:none; border:none; color:#bbb; font-size:14px; cursor:pointer; line-height:1; padding:0; }
-.lane-del:hover { color:#c62828; }
+.lane { position:absolute; left:0; right:0; border-bottom:1px solid var(--color-border); box-sizing:border-box; }
+.lane-label-wrap { position:absolute; left:0; top:0; width:90px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:1px solid var(--color-border); gap:4px; padding:4px; }
+.lane-label { font-size:11px; font-weight:500; color:var(--color-text-primary); text-align:center; cursor:pointer; word-break:break-word; }
+.lane-label:hover { color:var(--color-primary-500); text-decoration:underline dotted; }
+.lane-name-input { width:72px; font-size:11px; border:1px solid var(--color-primary-300); border-radius:3px; padding:2px 4px; text-align:center; }
+.lane-del { background:none; border:none; color:var(--color-text-disabled); font-size:14px; cursor:pointer; line-height:1; padding:0; }
+.lane-del:hover { color:var(--color-error); }
 .node { position:absolute; cursor:grab; user-select:none; display:flex; align-items:center; justify-content:center; text-align:center; font-size:11px; font-weight:500; z-index:10; }
 .node:active { cursor:grabbing; }
-.node.selected { outline:2px solid #1a237e; outline-offset:2px; }
-.node.connect-source { outline:2px solid #ff9800; outline-offset:2px; }
-.node-inicio { width:32px; height:32px; border-radius:50%; background:#333; color:#fff; }
-.node-fin { width:32px; height:32px; border-radius:50%; background:#333; border:3px solid #000; }
-.node-actividad { width:120px; height:44px; border-radius:8px; background:#fff; border:1.5px solid #1a237e; color:#0d2b8e; padding:4px 8px; word-break:break-word; }
-.node-decision { width:56px; height:56px; background:#fff; border:1.5px solid #f57f17; transform:rotate(45deg); }
-.decision-label { display:block; transform:rotate(-45deg); font-size:10px; color:#5d4037; }
-.node-fork, .node-join { width:90px; height:16px; background:#212121; border-radius:2px; }
+.node.selected { outline:2px solid var(--color-primary-500); outline-offset:2px; }
+.node.connect-source { outline:2px solid var(--color-warning); outline-offset:2px; }
+.node-inicio { width:32px; height:32px; border-radius:50%; background:var(--color-success); color:#fff; }
+.node-fin { width:32px; height:32px; border-radius:50%; background:var(--color-primary-700); border:3px solid var(--color-border); }
+.node-actividad { width:120px; height:44px; border-radius:8px; background:var(--color-surface); border:1.5px solid var(--color-primary-500); color:var(--color-primary-600); padding:4px 8px; word-break:break-word; }
+.node-decision { width:56px; height:56px; background:var(--color-surface); border:1.5px solid var(--color-warning); transform:rotate(45deg); }
+.decision-label { display:block; transform:rotate(-45deg); font-size:10px; color:var(--color-warning-dark); }
+.node-fork, .node-join { width:90px; height:16px; background:var(--color-primary-700); border-radius:2px; }
 .forkjoin-label { color:#fff; font-size:9px; letter-spacing:1px; font-weight:700; }
-.label-input { padding:3px 8px; border:1px solid #9fa8da; border-radius:4px; font-size:13px; width:200px; }
-.lane-select { padding:3px 6px; border:1px solid #9fa8da; border-radius:4px; font-size:13px; }
-.node-drawer { position:fixed; top:56px; right:0; width:380px; height:calc(100vh - 56px); background:#fff; border-left:2px solid #c5cae9; box-shadow:-4px 0 20px rgba(0,0,0,0.12); z-index:500; display:flex; flex-direction:column; animation:slideInRight 0.2s cubic-bezier(0.4,0,0.2,1); }
+.label-input { padding:3px 8px; border:1px solid var(--color-primary-300); border-radius:4px; font-size:13px; width:200px; }
+.lane-select { padding:3px 6px; border:1px solid var(--color-primary-300); border-radius:4px; font-size:13px; }
+.node-drawer { position:fixed; top:56px; right:0; width:380px; height:calc(100vh - 56px); background:var(--color-surface); border-left:2px solid var(--color-primary-200); box-shadow:-4px 0 20px rgba(0,0,0,0.12); z-index:500; display:flex; flex-direction:column; animation:slideInRight 0.2s cubic-bezier(0.4,0,0.2,1); }
 @keyframes slideInRight { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
 .drawer-overlay { position:fixed; inset:0; z-index:499; background:transparent; pointer-events:none; }
-.drawer-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1a237e; color:#fff; flex-shrink:0; }
+.drawer-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--color-primary-500); color:#fff; flex-shrink:0; }
 .drawer-title { font-size:13px; font-weight:600; }
 .drawer-close { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
 .drawer-close:hover { background:rgba(255,255,255,0.3); }
 .drawer-body { flex:1; overflow-y:auto; padding:14px 16px; font-size:13px; display:flex; flex-direction:column; gap:12px; }
 .node-editor-top { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
-.formulario-editor { background:#fff; border:1px solid #c5cae9; border-radius:6px; padding:8px; }
-.form-editor-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-weight:500; font-size:12px; color:#1a237e; }
-.btn-add-campo { padding:3px 10px; background:#1a237e; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:11px; }
-.no-campos { font-size:11px; color:#999; font-style:italic; }
+.formulario-editor { background:var(--color-surface); border:1px solid var(--color-primary-200); border-radius:6px; padding:8px; }
+.form-editor-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-weight:500; font-size:12px; color:var(--color-primary-500); }
+.btn-add-campo { padding:3px 10px; background:var(--color-primary-500); color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:11px; }
+.no-campos { font-size:11px; color:var(--color-text-tertiary); font-style:italic; }
 .campo-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; flex-wrap:wrap; }
-.campo-input { padding:3px 6px; border:1px solid #ddd; border-radius:4px; font-size:12px; width:140px; }
-.campo-select { padding:3px 6px; border:1px solid #ddd; border-radius:4px; font-size:12px; }
+.campo-input { padding:3px 6px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; width:140px; }
+.campo-select { padding:3px 6px; border:1px solid var(--color-border); border-radius:4px; font-size:12px; }
 .campo-req { font-size:11px; display:flex; align-items:center; gap:3px; white-space:nowrap; }
-.campo-opciones { padding:3px 6px; border:1px solid #ddd; border-radius:4px; font-size:11px; width:120px; }
-.opciones-editor { display:flex; flex-direction:column; gap:4px; margin:2px 0 8px 0; padding-left:6px; border-left:2px solid #e8eaf6; }
+.campo-opciones { padding:3px 6px; border:1px solid var(--color-border); border-radius:4px; font-size:11px; width:120px; }
+.opciones-editor { display:flex; flex-direction:column; gap:4px; margin:2px 0 8px 0; padding-left:6px; border-left:2px solid var(--color-primary-100); }
 .opcion-row { display:flex; align-items:center; gap:6px; }
 .campo-respuesta-editor { margin-top:8px; }
-.campo-respuesta-actual { display:flex; align-items:center; justify-content:space-between; background:#e8f5e9; color:#2e7d32; padding:6px 8px; border-radius:5px; font-size:12px; }
-.btn-del-campo { background:none; border:none; color:#c62828; font-size:16px; cursor:pointer; padding:0 4px; line-height:1; }
-.grid-columnas-editor { background:#f3f4fc; border:1px dashed #9fa8da; border-radius:5px; padding:6px 8px; margin:2px 0 8px; }
-.grid-columnas-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-size:11px; font-weight:500; color:#1a237e; }
-.btn-add-columna { padding:2px 8px; background:#1a237e; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:10px; }
+.campo-respuesta-actual { display:flex; align-items:center; justify-content:space-between; background:var(--color-success-bg); color:var(--color-success); padding:6px 8px; border-radius:5px; font-size:12px; }
+.btn-del-campo { background:none; border:none; color:var(--color-error); font-size:16px; cursor:pointer; padding:0 4px; line-height:1; }
+.grid-columnas-editor { background:var(--color-primary-50); border:1px dashed var(--color-primary-300); border-radius:5px; padding:6px 8px; margin:2px 0 8px; }
+.grid-columnas-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; font-size:11px; font-weight:500; color:var(--color-primary-500); }
+.btn-add-columna { padding:2px 8px; background:var(--color-primary-500); color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:10px; }
 .columna-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; flex-wrap:wrap; }
-.lane-depto-select { width:72px; font-size:10px; border:1px solid #9fa8da; border-radius:3px; padding:2px; margin-top:2px; }
+.lane-depto-select { width:72px; font-size:10px; border:1px solid var(--color-primary-300); border-radius:3px; padding:2px; margin-top:2px; }
 .lane-depto-badge { font-size:9px; display:block; text-align:center; }
-.lane-depto-badge.warn { color:#e65100; font-weight:700; }
+.lane-depto-badge.warn { color:var(--color-warning); font-weight:700; }
 .colab-bar { display:flex; align-items:center; gap:8px; margin-left:12px; }
-.ws-dot-colab { width:8px; height:8px; border-radius:50%; background:#ccc; flex-shrink:0; }
-.ws-dot-colab.online { background:#4caf50; }
+.ws-dot-colab { width:8px; height:8px; border-radius:50%; background:var(--color-border); flex-shrink:0; }
+.ws-dot-colab.online { background:var(--color-success); }
 .colab-chip { background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px; font-size:11px; color:#fff; }
 .btn-compartir-diag { padding:5px 14px; background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:6px; cursor:pointer; font-size:12px; }
 .btn-compartir-diag:hover { background:rgba(255,255,255,0.25); }
 .modal-overlay-diag { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:2000; }
-.modal-compartir-diag { background:#fff; padding:28px; border-radius:12px; width:460px; max-width:95vw; }
-.modal-compartir-diag h3 { margin:0 0 18px; color:#1a237e; }
+.modal-compartir-diag { background:var(--color-surface); padding:28px; border-radius:12px; width:460px; max-width:95vw; }
+.modal-compartir-diag h3 { margin:0 0 18px; color:var(--color-primary-500); }
 .modo-options { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
-.modo-opt { display:flex; align-items:center; gap:8px; padding:10px 14px; border:2px solid #e0e0e0; border-radius:8px; cursor:pointer; font-size:0.9rem; }
-.modo-opt.selected { border-color:#1a237e; background:#e8eaf6; }
-.btn-generar { width:100%; padding:10px; background:#1a237e; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem; }
+.modo-opt { display:flex; align-items:center; gap:8px; padding:10px 14px; border:2px solid var(--color-border); border-radius:8px; cursor:pointer; font-size:0.9rem; }
+.modo-opt.selected { border-color:var(--color-primary-500); background:var(--color-primary-100); }
+.btn-generar { width:100%; padding:10px; background:var(--color-primary-500); color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem; }
 .btn-generar:disabled { opacity:0.6; cursor:default; }
 .link-box-diag { display:flex; gap:8px; margin-bottom:8px; }
-.link-input-diag { flex:1; padding:8px; border:1px solid #ddd; border-radius:6px; font-size:0.82rem; background:#f5f5f5; }
-.btn-copiar-diag { background:#1a237e; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:background 0.2s; }
-.btn-copiar-diag.copiado { background:#2e7d32; }
-.link-hint-diag { font-size:0.8rem; color:#666; margin:4px 0 12px; }
-.alert-error-diag { background:#ffebee; color:#c62828; padding:8px; border-radius:6px; margin-bottom:12px; font-size:0.85rem; }
+.link-input-diag { flex:1; padding:8px; border:1px solid var(--color-border); border-radius:6px; font-size:0.82rem; background:var(--color-bg-subtle); }
+.btn-copiar-diag { background:var(--color-primary-500); color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:0.85rem; transition:background 0.2s; }
+.btn-copiar-diag.copiado { background:var(--color-success); }
+.link-hint-diag { font-size:0.8rem; color:var(--color-text-secondary); margin:4px 0 12px; }
+.alert-error-diag { background:var(--color-error-bg); color:var(--color-error); padding:8px; border-radius:6px; margin-bottom:12px; font-size:0.85rem; }
 .modal-actions-diag { display:flex; justify-content:flex-end; margin-top:12px; }
-.btn-cerrar-diag { background:#e0e0e0; color:#333; border:none; padding:8px 18px; border-radius:6px; cursor:pointer; }
+.btn-cerrar-diag { background:var(--color-border); color:var(--color-text-primary); border:none; padding:8px 18px; border-radius:6px; cursor:pointer; }
 .export-wrap { position:relative; }
-.export-btn { background:#fff; border:1px solid #ccc; }
-.export-dropdown { position:absolute; top:calc(100% + 4px); left:0; background:#fff; border:1px solid #ddd; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:100; min-width:110px; overflow:hidden; }
-.export-option { display:block; width:100%; padding:8px 14px; font-size:12px; border:none; background:none; cursor:pointer; text-align:left; color:#333; }
-.export-option:hover { background:#f5f5f5; }
-.ia-btn { background:#e8eaf6; color:#1a237e; border-color:#9fa8da; font-weight:500; }
-.ia-btn:hover { background:#c5cae9; }
-.ia-panel { background:#e8eaf6; border-bottom:2px solid #c5cae9; padding:12px 16px; flex-shrink:0; }
-.ia-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:600; font-size:13px; color:#1a237e; }
-.ia-close { background:none; border:none; font-size:16px; cursor:pointer; color:#666; line-height:1; padding:0 2px; }
-.ia-close:hover { color:#c62828; }
+.export-btn { background:var(--color-surface); border:1px solid var(--color-border); }
+.export-dropdown { position:absolute; top:calc(100% + 4px); left:0; background:var(--color-surface); border:1px solid var(--color-border); border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:100; min-width:110px; overflow:hidden; }
+.export-option { display:block; width:100%; padding:8px 14px; font-size:12px; border:none; background:none; cursor:pointer; text-align:left; color:var(--color-text-primary); }
+.export-option:hover { background:var(--color-bg-subtle); }
+.ia-btn { background:var(--color-primary-100); color:var(--color-primary-500); border-color:var(--color-primary-300); font-weight:500; }
+.ia-btn:hover { background:var(--color-primary-200); }
+.ia-panel { background:var(--color-primary-100); border-bottom:2px solid var(--color-primary-200); padding:12px 16px; flex-shrink:0; }
+.ia-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:600; font-size:13px; color:var(--color-primary-500); }
+.ia-close { background:none; border:none; font-size:16px; cursor:pointer; color:var(--color-text-secondary); line-height:1; padding:0 2px; }
+.ia-close:hover { color:var(--color-error); }
 .ia-panel-body { display:flex; flex-direction:column; gap:8px; }
-.ia-hint { margin:0; font-size:11px; color:#666; }
-.ia-textarea { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #9fa8da; border-radius:6px; font-size:12px; font-family:inherit; resize:vertical; background:#fff; }
-.ia-textarea:focus { outline:none; border-color:#1a237e; }
+.ia-hint { margin:0; font-size:11px; color:var(--color-text-secondary); }
+.ia-textarea { width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid var(--color-primary-300); border-radius:6px; font-size:12px; font-family:inherit; resize:vertical; background:var(--color-surface); }
+.ia-textarea:focus { outline:none; border-color:var(--color-primary-500); }
 .ia-textarea:disabled { opacity:0.6; }
-.ia-btn-generar { padding:8px 16px; background:#1a237e; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; align-self:flex-start; }
+.ia-btn-generar { padding:8px 16px; background:var(--color-primary-500); color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:500; display:flex; align-items:center; gap:6px; align-self:flex-start; }
 .ia-btn-generar:disabled { opacity:0.55; cursor:default; }
-.ia-btn-generar:hover:not(:disabled) { background:#283593; }
+.ia-btn-generar:hover:not(:disabled) { background:var(--color-primary-600); }
 .ia-spinner { width:12px; height:12px; border:2px solid rgba(255,255,255,0.4); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; display:inline-block; }
 @keyframes spin { to { transform:rotate(360deg); } }
-.ia-success { background:#e8f5e9; color:#2e7d32; padding:6px 10px; border-radius:5px; font-size:11px; }
-.ia-error   { background:#ffebee; color:#c62828; padding:6px 10px; border-radius:5px; font-size:11px; }
+.ia-success { background:var(--color-success-bg); color:var(--color-success); padding:6px 10px; border-radius:5px; font-size:11px; }
+.ia-error   { background:var(--color-error-bg); color:var(--color-error); padding:6px 10px; border-radius:5px; font-size:11px; }
 .ia-modo-selector { display:flex; gap:6px; margin-bottom:6px; }
-.ia-modo-btn { flex:1; padding:5px 8px; font-size:11px; font-weight:500; border:1.5px solid #1a237e; border-radius:5px; cursor:pointer; background:#fff; color:#1a237e; transition:background 0.15s, color 0.15s; }
-.ia-modo-btn:hover:not(.active) { background:#e8eaf6; }
-.ia-modo-btn.active { background:#1a237e; color:#fff; }
-.btn-sugerir-ia { padding:3px 8px; background:#e8eaf6; color:#1a237e; border:1px solid #9fa8da; border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; white-space:nowrap; }
-.btn-sugerir-ia:hover { background:#c5cae9; }
-.ia-sugerir-panel { background:#f3f4fc; border:1px solid #c5cae9; border-radius:5px; padding:8px; margin:6px 0; display:flex; flex-direction:column; gap:6px; }
-.ia-sugerir-input { flex:1; padding:4px 8px; border:1px solid #9fa8da; border-radius:4px; font-size:12px; font-family:inherit; }
-.ia-sugerir-input:focus { outline:none; border-color:#1a237e; }
-.btn-sugerir-ejecutar { padding:4px 10px; background:#1a237e; color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:11px; white-space:nowrap; }
+.ia-modo-btn { flex:1; padding:5px 8px; font-size:11px; font-weight:500; border:1.5px solid var(--color-primary-500); border-radius:5px; cursor:pointer; background:var(--color-surface); color:var(--color-primary-500); transition:background 0.15s, color 0.15s; }
+.ia-modo-btn:hover:not(.active) { background:var(--color-primary-100); }
+.ia-modo-btn.active { background:var(--color-primary-500); color:#fff; }
+.btn-sugerir-ia { padding:3px 8px; background:var(--color-primary-100); color:var(--color-primary-500); border:1px solid var(--color-primary-300); border-radius:4px; cursor:pointer; font-size:11px; font-weight:500; white-space:nowrap; }
+.btn-sugerir-ia:hover { background:var(--color-primary-200); }
+.ia-sugerir-panel { background:var(--color-primary-50); border:1px solid var(--color-primary-200); border-radius:5px; padding:8px; margin:6px 0; display:flex; flex-direction:column; gap:6px; }
+.ia-sugerir-input { flex:1; padding:4px 8px; border:1px solid var(--color-primary-300); border-radius:4px; font-size:12px; font-family:inherit; }
+.ia-sugerir-input:focus { outline:none; border-color:var(--color-primary-500); }
+.btn-sugerir-ejecutar { padding:4px 10px; background:var(--color-primary-500); color:#fff; border:none; border-radius:4px; cursor:pointer; font-size:11px; white-space:nowrap; }
 .btn-sugerir-ejecutar:disabled { opacity:0.55; cursor:default; }
-.ia-sugerir-error { color:#c62828; font-size:11px; }
+.ia-sugerir-error { color:var(--color-error); font-size:11px; }
 .campos-sugeridos-lista { display:flex; flex-direction:column; gap:4px; }
-.campos-sugeridos-title { font-size:10px; color:#555; font-style:italic; }
-.campo-sugerido-row { display:flex; align-items:center; gap:6px; padding:4px 8px; background:#fff; border:1px solid #c5cae9; border-radius:4px; cursor:pointer; font-size:11px; }
-.campo-sugerido-row:hover { background:#e8eaf6; border-color:#1a237e; }
-.campo-sug-etiqueta { font-weight:500; color:#1a237e; flex:1; }
-.campo-sug-tipo { color:#757575; font-size:10px; background:#ede7f6; padding:1px 5px; border-radius:3px; }
-.campo-sug-req { color:#c62828; font-size:10px; font-weight:600; }
-.campo-sug-add { margin-left:auto; color:#388e3c; font-weight:500; font-size:10px; }
-.docs-actividad-section { background:#fff8e1; border:1px solid #ffe082; border-radius:5px; padding:6px 8px; margin-top:6px; }
-.docs-act-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; font-weight:500; font-size:11px; color:#795548; }
-.btn-adj-doc { padding:2px 8px; background:#fff3e0; color:#795548; border:1px solid #ffe082; border-radius:4px; cursor:pointer; font-size:11px; }
-.btn-adj-doc:hover { background:#ffe082; }
-.docs-loading, .no-docs-act { font-size:11px; color:#999; font-style:italic; }
+.campos-sugeridos-title { font-size:10px; color:var(--color-text-secondary); font-style:italic; }
+.campo-sugerido-row { display:flex; align-items:center; gap:6px; padding:4px 8px; background:var(--color-surface); border:1px solid var(--color-primary-200); border-radius:4px; cursor:pointer; font-size:11px; }
+.campo-sugerido-row:hover { background:var(--color-primary-100); border-color:var(--color-primary-500); }
+.campo-sug-etiqueta { font-weight:500; color:var(--color-primary-500); flex:1; }
+.campo-sug-tipo { color:var(--color-text-secondary); font-size:10px; background:var(--color-accent-bg); padding:1px 5px; border-radius:3px; }
+.campo-sug-req { color:var(--color-error); font-size:10px; font-weight:600; }
+.campo-sug-add { margin-left:auto; color:var(--color-success); font-weight:500; font-size:10px; }
+.docs-actividad-section { background:var(--color-warning-bg-alt); border:1px solid var(--color-warning-border); border-radius:5px; padding:6px 8px; margin-top:6px; }
+.docs-act-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; font-weight:500; font-size:11px; color:var(--color-warning-dark); }
+.btn-adj-doc { padding:2px 8px; background:var(--color-warning-bg); color:var(--color-warning-dark); border:1px solid var(--color-warning-border); border-radius:4px; cursor:pointer; font-size:11px; }
+.btn-adj-doc:hover { background:var(--color-warning-border); }
+.docs-loading, .no-docs-act { font-size:11px; color:var(--color-text-tertiary); font-style:italic; }
 .doc-act-row { display:flex; align-items:center; gap:6px; padding:2px 0; font-size:11px; }
-.doc-act-nombre { flex:1; color:#333; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
-.btn-doc-dl { color:#1565c0; text-decoration:none; font-size:13px; }
-.btn-doc-del { background:none; border:none; color:#c62828; font-size:14px; cursor:pointer; padding:0 2px; line-height:1; }
-.btn-privilegios { padding:4px 12px; background:#e8eaf6; color:#1a237e; border:1px solid #c5cae9; border-radius:5px; cursor:pointer; font-size:12px; font-weight:500; white-space:nowrap; }
-.btn-privilegios:hover { background:#c5cae9; }
-.privilegios-panel { background:#fff; border-bottom:2px solid #c5cae9; padding:12px 16px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-.priv-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:600; font-size:13px; color:#1a237e; }
-.priv-close { background:none; border:none; font-size:16px; cursor:pointer; color:#666; }
-.priv-close:hover { color:#c62828; }
+.doc-act-nombre { flex:1; color:var(--color-text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
+.btn-doc-dl { color:var(--color-info); text-decoration:none; font-size:13px; }
+.btn-doc-del { background:none; border:none; color:var(--color-error); font-size:14px; cursor:pointer; padding:0 2px; line-height:1; }
+.btn-privilegios { padding:4px 12px; background:var(--color-primary-100); color:var(--color-primary-500); border:1px solid var(--color-primary-200); border-radius:5px; cursor:pointer; font-size:12px; font-weight:500; white-space:nowrap; }
+.btn-privilegios:hover { background:var(--color-primary-200); }
+.privilegios-panel { background:var(--color-surface); border-bottom:2px solid var(--color-primary-200); padding:12px 16px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.priv-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-weight:600; font-size:13px; color:var(--color-primary-500); }
+.priv-close { background:none; border:none; font-size:16px; cursor:pointer; color:var(--color-text-secondary); }
+.priv-close:hover { color:var(--color-error); }
 .priv-body { display:flex; flex-direction:column; gap:8px; }
-.priv-row { display:flex; align-items:center; gap:12px; padding:6px 10px; background:#f8f9ff; border-radius:6px; border:1px solid #e8eaf6; }
-.priv-label { font-size:12px; font-weight:500; color:#333; min-width:160px; }
+.priv-row { display:flex; align-items:center; gap:12px; padding:6px 10px; background:var(--color-primary-50); border-radius:6px; border:1px solid var(--color-primary-100); }
+.priv-label { font-size:12px; font-weight:500; color:var(--color-text-primary); min-width:160px; }
 .priv-checks { display:flex; gap:16px; }
-.priv-check-label { display:flex; align-items:center; gap:5px; font-size:12px; color:#555; cursor:pointer; }
+.priv-check-label { display:flex; align-items:center; gap:5px; font-size:12px; color:var(--color-text-secondary); cursor:pointer; }
 .priv-check-label input { cursor:pointer; }
   `]
 })
@@ -726,10 +750,10 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
   mostrarPrivilegios = signal(false);
   readonly rolesDisponibles = ['ADMIN', 'FUNCIONARIO', 'CLIENTE'];
   readonly permisosConfig = [
-    { key: 'verDocumentos',      label: '👁 Ver documentos' },
-    { key: 'subirDocumentos',    label: '📤 Subir documentos' },
-    { key: 'eliminarDocumentos', label: '🗑 Eliminar documentos' },
-    { key: 'aprobar',            label: '✅ Aprobar/Completar' },
+    { key: 'verDocumentos',      label: 'Ver documentos' },
+    { key: 'subirDocumentos',    label: 'Subir documentos' },
+    { key: 'eliminarDocumentos', label: 'Eliminar documentos' },
+    { key: 'aprobar',            label: 'Aprobar/Completar' },
   ];
   loading = signal(false);
   error = signal('');
@@ -819,7 +843,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
             try {
               const data: DiagramData = JSON.parse(p.diagramJson);
               this.lanes = data.lanes?.length ? data.lanes : this.defaultLanes();
-              this.lanes = this.lanes.map(l => ({ departamentoId: '', ...l }));
+              this.lanes = this.lanes.map((l, i) => ({ departamentoId: '', ...l, color: LANE_COLORS[i % LANE_COLORS.length] }));
               this.laneCounter = this.lanes.length;
               this.nodes = data.nodes || [];
               this.connections = data.connections || [];
@@ -1234,7 +1258,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
   renderConnections() {
     const svg = this.svgLayerRef?.nativeElement;
     if (!svg) return;
-    svg.innerHTML = '<defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#1a237e"/></marker></defs>';
+    svg.innerHTML = '<defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="var(--color-primary-500)"/></marker></defs>';
     this.connections.forEach(c => {
       const fn = this.nodes.find(n => n.id === c.from);
       const tn = this.nodes.find(n => n.id === c.to);
@@ -1244,7 +1268,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
       const mx = (x1 + x2) / 2;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
-      path.setAttribute('stroke', '#1a237e');
+      path.setAttribute('stroke', 'var(--color-primary-500)');
       path.setAttribute('stroke-width', '1.5');
       path.setAttribute('fill', 'none');
       path.setAttribute('marker-end', 'url(#arr)');
@@ -1258,7 +1282,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('font-size', '10');
         label.setAttribute('font-weight', '600');
-        label.setAttribute('fill', '#f57f17');
+        label.setAttribute('fill', 'var(--color-warning)');
         label.setAttribute('stroke', '#fff');
         label.setAttribute('stroke-width', '3');
         label.setAttribute('paint-order', 'stroke');
@@ -1370,7 +1394,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
       const canvas = await html2canvas(this.canvasRef.nativeElement, {
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'var(--color-bg-page)',
         scale: 2,
       });
       const link = document.createElement('a');
@@ -1389,7 +1413,7 @@ export class PoliticaDiagramadorComponent implements OnInit, AfterViewInit, OnDe
       const canvas = await html2canvas(this.canvasRef.nativeElement, {
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#f8f8f8',
+        backgroundColor: 'var(--color-bg-page)',
         scale: 2,
       });
       const imgData = canvas.toDataURL('image/png');

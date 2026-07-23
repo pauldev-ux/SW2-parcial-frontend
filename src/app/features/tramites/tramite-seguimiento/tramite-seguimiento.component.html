@@ -42,12 +42,20 @@
               <button class="btn-ver-docs"
                       [class.active]="tramiteDocsAbierto() === t.id"
                       (click)="toggleDocsTramite(t.id, $event)">
-                📎 {{ tramiteDocsAbierto() === t.id ? '▲ Cerrar' : 'Ver documentos' }}
+                @if (tramiteDocsAbierto() === t.id) {
+                  <svg lucideChevronUp [size]="13"></svg> Cerrar
+                } @else {
+                  <svg lucidePaperclip [size]="13"></svg> Ver documentos
+                }
               </button>
               <button class="btn-ver-docs"
                       [class.active]="tramiteHistorialAbierto() === t.id"
                       (click)="toggleHistorial(t.id, $event)">
-                🕓 {{ tramiteHistorialAbierto() === t.id ? '▲ Cerrar' : 'Trazabilidad' }}
+                @if (tramiteHistorialAbierto() === t.id) {
+                  <svg lucideChevronUp [size]="13"></svg> Cerrar
+                } @else {
+                  <svg lucideClock [size]="13"></svg> Trazabilidad
+                }
               </button>
             </td>
             @if (auth.getUserRole() !== 'CLIENTE') {
@@ -56,9 +64,9 @@
                         [disabled]="generandoReporte() === t.id"
                         (click)="generarReporte(t, $event)">
                   @if (generandoReporte() === t.id) {
-                    ⏳
+                    <svg lucideLoaderCircle [size]="13" class="spin"></svg>
                   } @else {
-                    📊 Reporte
+                    <svg lucideBarChart3 [size]="13"></svg> Reporte
                   }
                 </button>
               </td>
@@ -73,7 +81,7 @@
                 @if (auth.getUserRole() === 'ADMIN' &&
                      (t.estado === 'CANCELADO' || t.estado === 'COMPLETADO')) {
                   <button class="btn-eliminar-tramite" (click)="eliminarTramite(t.id)">
-                    🗑 Eliminar
+                    <svg lucideTrash2 [size]="13"></svg> Eliminar
                   </button>
                 }
               </td>
@@ -89,7 +97,15 @@
                     <div class="timeline-tramite">
                       @for (h of t.historial; track $index) {
                         <div class="timeline-evento">
-                          <span class="timeline-icono">{{ iconoHistorialTramite(h.tipo) }}</span>
+                          <span class="timeline-icono">
+                            @switch (iconoHistorialTramite(h.tipo)) {
+                              @case ('sparkles') { <svg lucideSparkles [size]="13"></svg> }
+                              @case ('user') { <svg lucideUser [size]="13"></svg> }
+                              @case ('refresh-cw') { <svg lucideRefreshCw [size]="13"></svg> }
+                              @case ('arrow-right') { <svg lucideArrowRight [size]="13"></svg> }
+                              @default { <svg lucideClipboardList [size]="13"></svg> }
+                            }
+                          </span>
                           <span class="timeline-tipo">{{ h.tipo }}</span>
                           <span class="timeline-desc">{{ h.descripcion }}</span>
                           <span class="timeline-fecha">{{ h.fecha | slice:0:16 }}</span>
@@ -114,8 +130,8 @@
                     <div class="docs-lista">
                       @for (doc of docsDelTramite(); track doc.id) {
                         <div class="doc-fila">
-                          <span class="doc-nombre">📄 {{ doc.nombre }}</span>
-                          <a [href]="doc.url" target="_blank" class="btn-doc-dl-seg">⬇ Descargar</a>
+                          <span class="doc-nombre"><svg lucideFileText [size]="13"></svg> {{ doc.nombre }}</span>
+                          <a [href]="doc.url" target="_blank" class="btn-doc-dl-seg"><svg lucideDownload [size]="13"></svg> Descargar</a>
                         </div>
                       }
                     </div>
@@ -124,7 +140,7 @@
                     <div class="cliente-formulario-section">
                       <div class="cliente-upload-header">
                         <span class="upload-hint">
-                          📋 Paso actual: <strong>{{ actividadActiva()!.nombre }}</strong>
+                          <svg lucideClipboardList [size]="14"></svg> Paso actual: <strong>{{ actividadActiva()!.nombre }}</strong>
                         </span>
                       </div>
 
@@ -137,12 +153,16 @@
                           <span class="upload-error">{{ errorFormularioActiva() }}</span>
                         }
                         @if (exitoFormularioActiva()) {
-                          <span class="cliente-form-exito">✅ Formulario guardado</span>
+                          <span class="cliente-form-exito"><svg lucideCircleCheck [size]="13"></svg> Formulario guardado</span>
                         }
                         <button class="btn-completar-cliente"
                                 [disabled]="guardandoFormularioActiva()"
                                 (click)="completarFormularioActiva()">
-                          {{ guardandoFormularioActiva() ? 'Guardando...' : '✓ Completar paso' }}
+                          @if (guardandoFormularioActiva()) {
+                            Guardando...
+                          } @else {
+                            <svg lucideCheck [size]="13"></svg> Completar paso
+                          }
                         </button>
                       }
                     </div>
@@ -151,9 +171,9 @@
                       <div class="cliente-upload-section">
                         <label class="btn-subir-cliente">
                           @if (subiendoDocCliente()) {
-                            ⏳ Subiendo...
+                            <svg lucideLoaderCircle [size]="13" class="spin"></svg> Subiendo...
                           } @else {
-                            📎 Adjuntar documento
+                            <svg lucidePaperclip [size]="13"></svg> Adjuntar documento
                           }
                           <input type="file" style="display:none"
                                  [disabled]="subiendoDocCliente()"

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { NlpService } from '../../../core/services/nlp.service';
 import { CampoFormulario } from '../../models';
+import { LucideBot, LucideCircleCheck, LucideCheck } from '@lucide/angular';
 
 /**
  * Renderiza un formulario dinamico a partir de una definicion de campos
@@ -17,7 +18,7 @@ import { CampoFormulario } from '../../models';
 @Component({
   selector: 'app-formulario-dinamico',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, LucideBot, LucideCircleCheck, LucideCheck],
   templateUrl: './formulario-dinamico.component.html',
   styleUrl: './formulario-dinamico.component.css',
 })

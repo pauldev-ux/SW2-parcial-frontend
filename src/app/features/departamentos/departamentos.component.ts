@@ -2,10 +2,11 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { Departamento } from '../../shared/models';
+import { LucideTrash2 } from '@lucide/angular';
 
 @Component({
   selector: 'app-departamentos',
-  imports: [FormsModule],
+  imports: [FormsModule, LucideTrash2],
   template: `
 <div class="page">
   <div class="page-header">
@@ -47,7 +48,7 @@ import { Departamento } from '../../shared/models';
             <td>{{ d.descripcion }}</td>
             <td class="actions">
               <button class="btn-sm" (click)="editar(d)">Editar</button>
-              <button class="btn-sm btn-danger" (click)="eliminar(d.id)">Eliminar</button>
+              <button class="btn-sm btn-danger" (click)="eliminar(d.id)"><svg lucideTrash2 [size]="13"></svg> Eliminar</button>
             </td>
           </tr>
         }
@@ -59,23 +60,23 @@ import { Departamento } from '../../shared/models';
   styles: [`
 .page { padding: 2rem; }
 .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-.page-header h1 { margin:0; color:#1a237e; }
-.btn-primary { background:#1a237e; color:#fff; padding:0.5rem 1.25rem; border:none; border-radius:4px; cursor:pointer; }
-.btn-secondary { background:#f5f5f5; color:#333; padding:0.5rem 1.25rem; border:1px solid #ddd; border-radius:4px; cursor:pointer; }
-.form-card { background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; }
-.form-card h3 { margin:0 0 1rem; color:#1a237e; }
+.page-header h1 { margin:0; color:var(--color-primary-500); }
+.btn-primary { background:var(--color-primary-500); color:#fff; padding:0.5rem 1.25rem; border:none; border-radius:4px; cursor:pointer; }
+.btn-secondary { background:var(--color-bg-subtle); color:var(--color-text-primary); padding:0.5rem 1.25rem; border:1px solid var(--color-border); border-radius:4px; cursor:pointer; }
+.form-card { background:var(--color-surface); border:1px solid var(--color-border); border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; }
+.form-card h3 { margin:0 0 1rem; color:var(--color-primary-500); }
 .form-group { margin-bottom:1rem; }
-.form-group label { display:block; font-size:13px; color:#555; margin-bottom:4px; }
-.form-group input { width:100%; padding:8px; border:1px solid #ddd; border-radius:4px; font-size:14px; }
+.form-group label { display:block; font-size:13px; color:var(--color-text-secondary); margin-bottom:4px; }
+.form-group input { width:100%; padding:8px; border:1px solid var(--color-border); border-radius:4px; font-size:14px; }
 .form-actions { display:flex; gap:8px; }
-.table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
-.table th { background:#f5f5f5; padding:0.75rem 1rem; text-align:left; font-weight:600; color:#616161; }
-.table td { padding:0.75rem 1rem; border-bottom:1px solid #f0f0f0; }
+.table { width:100%; border-collapse:collapse; background:var(--color-surface); border-radius:8px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
+.table th { background:var(--color-bg-subtle); padding:0.75rem 1rem; text-align:left; font-weight:600; color:var(--color-text-secondary); }
+.table td { padding:0.75rem 1rem; border-bottom:1px solid var(--color-bg-subtle); }
 .actions { display:flex; gap:0.5rem; }
-.btn-sm { padding:3px 10px; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem; background:#e8eaf6; color:#1a237e; }
-.btn-danger { background:#ffebee; color:#c62828; }
-.error-msg { color:#c62828; }
-.empty { color:#9e9e9e; }
+.btn-sm { padding:3px 10px; border:none; border-radius:4px; cursor:pointer; font-size:0.8rem; background:var(--color-primary-100); color:var(--color-primary-500); }
+.btn-danger { background:var(--color-error-bg); color:var(--color-error); }
+.error-msg { color:var(--color-error); }
+.empty { color:var(--color-text-tertiary); }
   `]
 })
 export class DepartamentosComponent implements OnInit {

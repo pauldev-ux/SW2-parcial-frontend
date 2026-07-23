@@ -6,7 +6,7 @@
   } @else {
     <div class="form-card">
       <div class="ia-recomendar-wrap">
-        <div class="ia-recomendar-header">🤖 ¿No sabes qué tipo de trámite necesitas?</div>
+        <div class="ia-recomendar-header"><svg lucideBot [size]="15"></svg> ¿No sabes qué tipo de trámite necesitas?</div>
         <div class="ia-recomendar-body">
           <textarea [(ngModel)]="descripcionIA" name="descripcionIA" rows="2"
                     placeholder="Describe brevemente tu trámite y la IA te sugerirá la política correcta..."
@@ -25,7 +25,7 @@
                 Confianza: <strong>{{ (recomendacion()!.confianza * 100).toFixed(0) }}%</strong>
               </div>
               <div class="ia-resultado-razon">{{ recomendacion()!.razon }}</div>
-              <div class="ia-resultado-hint">👆 Clic para seleccionar esta política</div>
+              <div class="ia-resultado-hint"><svg lucideMousePointerClick [size]="13"></svg> Clic para seleccionar esta política</div>
             </div>
           }
         </div>
@@ -73,7 +73,7 @@
 
       @if (formularioInicial().length > 0) {
         <div class="formulario-section">
-          <h3>📋 Datos requeridos</h3>
+          <h3><svg lucideClipboardList [size]="16"></svg> Datos requeridos</h3>
           <app-formulario-dinamico
             [campos]="formularioInicial()"
             [datos]="datosFormulario">

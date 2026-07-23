@@ -2,10 +2,11 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { Politica } from '../../../shared/models';
+import { LucideUsers, LucideTrash2 } from '@lucide/angular';
 
 @Component({
   selector: 'app-politicas-list',
-  imports: [RouterLink],
+  imports: [RouterLink, LucideUsers, LucideTrash2],
   templateUrl: './politicas-list.component.html',
   styleUrl: './politicas-list.component.css',
 })
